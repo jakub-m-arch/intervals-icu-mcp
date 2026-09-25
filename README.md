@@ -97,19 +97,37 @@ npm install && npm run build
 claude mcp add intervals-icu -e INTERVALS_ICU_API_KEY=your-key -- node /absolute/path/to/intervals-icu-mcp/dist/index.mjs
 ```
 
-**Claude Desktop**: add the following to `claude_desktop_config.json`:
+**Claude Desktop**: open Settings → Developer → Edit Config and add the following to
+`claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "intervals-icu": {
-      "command": "node",
+      "command": "/absolute/path/to/node",
       "args": ["/absolute/path/to/intervals-icu-mcp/dist/index.mjs"],
       "env": { "INTERVALS_ICU_API_KEY": "your-key" }
     }
   }
 }
 ```
+
+Use the absolute path to `node` (see `which node`). Claude Desktop does not inherit your shell's
+`PATH`, so a plain `"node"` often fails, especially with nvm. Quit the app (Cmd+Q) and start it
+again to load the server.
+
+Want to look around first without any risk of changes? Add
+`"INTERVALS_ICU_WRITE_MODE": "read-only"` to `env`.
+
+**Try it without an AI client:** `npm run inspect` opens the
+[MCP Inspector](https://github.com/modelcontextprotocol/inspector), where you can call each tool
+by hand. It reads the API key from `.env`.
+
+## Everyday use
+
+See **[docs/usage.md](docs/usage.md)**. It covers a daily and weekly routine (recovery check,
+session analysis, weekly review), planning workouts that sync to your watch, and
+troubleshooting.
 
 ## Roadmap
 
