@@ -1,0 +1,70 @@
+{
+  "name": "@jakub-m-arch/intervals-icu-mcp",
+  "version": "0.0.0",
+  "description": "Model Context Protocol (MCP) server for Intervals.icu — let Claude and other AI assistants read and plan your training.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "intervals.icu",
+    "intervals-icu",
+    "running",
+    "cycling",
+    "training",
+    "claude"
+  ],
+  "homepage": "https://github.com/jakub-m-arch/intervals-icu-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/jakub-m-arch/intervals-icu-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jakub-m-arch/intervals-icu-mcp.git"
+  },
+  "license": "MIT",
+  "author": "Jakub M (https://github.com/jakub-m-arch)",
+  "type": "module",
+  "bin": {
+    "intervals-icu-mcp": "./dist/index.mjs"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "start": "node dist/index.mjs",
+    "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "prepublishOnly": "npm run check"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.1.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@modelcontextprotocol/client": "^2.1.0",
+    "@types/node": "^22.20.4",
+    "@vitest/coverage-v8": "^5.0.1",
+    "tsdown": "^0.23.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.1"
+  }
+}
