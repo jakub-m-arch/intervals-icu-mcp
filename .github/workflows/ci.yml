@@ -29,7 +29,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - name: Generated API types match the OpenAPI snapshot
-        run: npm run openapi:generate && git diff --exit-code src/api/schema.d.ts
+        run: npm run openapi:generate && git diff --exit-code src/api/
       - run: npm run typecheck
       - run: npm test
       - name: Generated docs are up to date

@@ -5,7 +5,7 @@
 import { appendFileSync } from 'node:fs';
 import type { Client } from '@modelcontextprotocol/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loadConfig } from '../../src/config.js';
+import { loadConfig, parseToolsets } from '../../src/config.js';
 import { callTool, connectClient } from '../helpers/mcp.js';
 
 const hasKey = Boolean(process.env.INTERVALS_ICU_API_KEY);
@@ -16,7 +16,11 @@ describe.skipIf(!hasKey)('live Intervals.icu API (read-only)', () => {
   let client: Client;
 
   beforeAll(async () => {
-    client = await connectClient({ ...loadConfig(), writeMode: 'read-only' });
+    client = await connectClient({
+      ...loadConfig(),
+      writeMode: 'read-only',
+      toolsets: parseToolsets('all'),
+    });
   });
   afterAll(async () => {
     await client?.close();
@@ -70,5 +74,14 @@ describe.skipIf(!hasKey)('live Intervals.icu API (read-only)', () => {
     await call('list_workout_library', {});
     await call('get_training_plan', {});
     await call('list_gear', {});
+  });
+
+  it('raw api_get', async () => {
+    const list = await call('list_api_endpoints', { filter: 'sport-settings' });
+    expect((list.endpoints as unknown[]).length).toBeGreaterThan(0);
+    const settings = await call('api_get', { path: '/athlete/me/sport-settings' });
+    expect(settings.operation).toBe('listSettings');
+    await call('api_get', { path: '/athlete/0/weather-forecast' });
+    await call('api_get', { path: '/athlete/0/activity-tags' });
   });
 });

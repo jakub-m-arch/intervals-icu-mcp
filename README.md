@@ -31,8 +31,11 @@ assistants read your training data and help you plan training.
 
 ## Tools
 
-38 tools. The full reference, generated from the code, is in [docs/tools.md](docs/tools.md), and
-API coverage is tracked in [docs/coverage.md](docs/coverage.md).
+47 tools: 42 in the default toolsets, and 5 opt-in via `INTERVALS_ICU_TOOLSETS`
+(e.g. `default,raw`). All 149 Intervals.icu API operations are accounted for: 48 have
+dedicated tools, 49 more can be read through `api_get`, and 52 are deliberately excluded
+with a documented reason. See [docs/coverage.md](docs/coverage.md) and the generated tool
+reference in [docs/tools.md](docs/tools.md).
 
 | Toolset | Read | Write (`safe`, default) | Delete (`full` only) |
 |---|---|---|---|
@@ -41,9 +44,12 @@ API coverage is tracked in [docs/coverage.md](docs/coverage.md).
 | `analysis` | `get_activity_streams`, `get_activity_histogram`, `get_activity_best_efforts`, `get_activity_segment_stats`, `search_intervals` | | |
 | `curves` | `get_athlete_curves` | | |
 | `wellness` | `get_wellness` | `update_wellness` | |
-| `calendar` | `list_events`, `get_event` | `create_events`, `update_event`, `mark_event_done`, `duplicate_events` | `delete_events` |
-| `library` | `list_workout_library`, `get_workout`, `get_training_plan` | `create_folder`, `update_folder`, `create_workouts`, `update_workout` | `delete_workout`, `delete_folder` |
-| `gear` | `list_gear` | `create_gear`, `update_gear`, `add_gear_reminder` | `delete_gear` |
+| `calendar` | `list_events`, `get_event` | `create_events`, `update_event`, `mark_event_done`, `duplicate_events`, `apply_plan` | `delete_events` |
+| `library` | `list_workout_library`, `get_workout`, `get_training_plan` | `create_folder`, `update_folder`, `create_workouts`, `update_workout`, `duplicate_workouts` | `delete_workout`, `delete_folder` |
+| `gear` | `list_gear` | `create_gear`, `update_gear`, `add_gear_reminder`, `update_gear_reminder` | `delete_gear`, `delete_gear_reminder` |
+| `settings` (opt-in) | | `update_sport_settings`, `apply_sport_settings` | |
+| `chats` (opt-in) | | `add_activity_comment` | |
+| `raw` (opt-in) | `list_api_endpoints`, `api_get` (any read endpoint) | | |
 
 **Prompts** (slash commands in most clients): `weekly-review`, `analyze-activity`,
 `recovery-check`, `plan-next-week`, `race-prep`.
@@ -112,7 +118,7 @@ claude mcp add intervals-icu -e INTERVALS_ICU_API_KEY=your-key -- node /absolute
 | 0.1 | Foundation: typed API client, config, first tools (athlete profile, activities, fitness) |
 | 0.2 | Core read tools: activity analysis, curves, wellness, calendar, workout library, gear |
 | 0.3 | Safe writes: plan workouts on the calendar, manage the workout library, log wellness |
-| 0.4 | Full API coverage via opt-in toolsets, coverage report, spec-drift detection |
+| 0.4 | Full API coverage via opt-in toolsets, coverage report, weekly spec-drift PRs |
 | 1.0 | Stable release: npm, MCP Bundle for Claude Desktop, MCP Registry, Docker image |
 | 1.x | Remote mode: Streamable HTTP with Intervals.icu OAuth |
 

@@ -112,9 +112,11 @@ async function coverageMarkdown(): Promise<string> {
   }
 
   const all = [...byTag.values()].flat();
-  const covered = all.filter((o) => coveredBy.has(o.id)).length;
+  const dedicated = (id: string) => (coveredBy.get(id) ?? []).filter((t) => t !== 'api_get');
+  const covered = all.filter((o) => dedicated(o.id).length > 0).length;
+  const rawOnly = all.filter((o) => dedicated(o.id).length === 0 && coveredBy.has(o.id)).length;
   const excluded = all.filter((o) => !coveredBy.has(o.id) && o.id in EXCLUDED_OPERATIONS).length;
-  const planned = all.length - covered - excluded;
+  const planned = all.length - covered - rawOnly - excluded;
 
   const lines = [
     '# API coverage',
@@ -123,7 +125,8 @@ async function coverageMarkdown(): Promise<string> {
     '',
     '| Status | Operations |',
     '|---|---|',
-    `| ✅ Covered | ${covered} |`,
+    `| ✅ Dedicated tool | ${covered} |`,
+    `| 🔧 Raw read via \`api_get\` (opt-in \`raw\` toolset) | ${rawOnly} |`,
     `| ⛔ Excluded on purpose | ${excluded} |`,
     `| ⏳ Planned | ${planned} |`,
     `| **Total** | **${all.length}** |`,
@@ -132,13 +135,16 @@ async function coverageMarkdown(): Promise<string> {
   for (const [tag, ops] of [...byTag.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     lines.push(`## ${tag}`, '', '| Operation | Endpoint | Status |', '|---|---|---|');
     for (const op of ops.sort((a, b) => a.id.localeCompare(b.id))) {
-      const tools = coveredBy.get(op.id);
+      const tools = dedicated(op.id);
       const reason = EXCLUDED_OPERATIONS[op.id as keyof typeof EXCLUDED_OPERATIONS];
-      const status = tools
-        ? `✅ ${tools.map((t) => `\`${t}\``).join(', ')}`
-        : reason
-          ? `⛔ ${reason}`
-          : '⏳ planned';
+      const status =
+        tools.length > 0
+          ? `✅ ${tools.map((t) => `\`${t}\``).join(', ')}`
+          : coveredBy.has(op.id)
+            ? '🔧 `api_get`'
+            : reason
+              ? `⛔ ${reason}`
+              : '⏳ planned';
       lines.push(`| \`${op.id}\` | \`${op.method.toUpperCase()} ${op.path}\` | ${status} |`);
     }
     lines.push('');

@@ -368,6 +368,19 @@ Copy calendar events to later weeks, e.g. repeat this week's workouts for the ne
 
 API: `duplicateEvents`
 
+### `apply_plan`
+
+**Put a training plan on the calendar** · write (`safe` mode)
+
+Copy all workouts of a training plan from the library (a PLAN folder, see list_workout_library) onto the calendar, starting on a date. Each workout lands on start date + its plan day. Adds many events: confirm the plan and start date first.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `plan_id` | integer | yes | Id of a PLAN folder from list_workout_library. |
+| `start_date` | string | yes | Date of plan day 0 (usually a Monday). |
+
+API: `applyPlan`, `listFolders`
+
 ### `delete_events`
 
 **Delete calendar events** · destructive (`full` mode)
@@ -478,6 +491,20 @@ Workout text syntax (Intervals.icu): one step per line starting with "- ", e.g. 
 
 API: `updateWorkout`
 
+### `duplicate_workouts`
+
+**Repeat plan workouts in later weeks** · write (`safe` mode)
+
+Copy workouts inside a training plan to later weeks of the plan, e.g. repeat week 1 for weeks 2–4.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `ids` | integer[] | yes |  |
+| `copies` | integer | yes |  |
+| `weeks_between` | integer |  | Default 1. |
+
+API: `duplicateWorkouts`
+
 ### `delete_workout`
 
 **Delete a library workout** · destructive (`full` mode)
@@ -537,7 +564,7 @@ API: `createGear`
 
 **Update or retire gear** · write (`safe` mode) · idempotent
 
-Rename gear, change its notes, or retire it (e.g. worn-out shoes). Only the fields you pass are changed.
+Rename gear, change its notes, or retire it (e.g. worn-out shoes; then add the new pair with create_gear). Only the fields you pass are changed.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
@@ -565,6 +592,37 @@ Add a replacement or maintenance reminder to gear, e.g. "replace shoes after 600
 
 API: `createReminder`
 
+### `update_gear_reminder`
+
+**Reset, snooze or change a gear reminder** · write (`safe` mode)
+
+Reset a gear reminder after doing the maintenance (starts counting again), snooze it, or change its limits.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `gear_id` | string | yes |  |
+| `reminder_id` | integer | yes | Reminder id (from list_gear with details). |
+| `reset` | boolean |  | Start counting from zero again. |
+| `snooze_days` | integer |  |  |
+| `name` | string |  |  |
+| `distance_km` | number |  |  |
+| `days` | integer |  |  |
+
+API: `updateReminder`, `listGear`
+
+### `delete_gear_reminder`
+
+**Delete a gear reminder** · destructive (`full` mode)
+
+Permanently delete a reminder from gear. Confirm with the user first.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `gear_id` | string | yes |  |
+| `reminder_id` | integer | yes |  |
+
+API: `deleteReminder`
+
 ### `delete_gear`
 
 **Delete gear** · destructive (`full` mode)
@@ -576,3 +634,76 @@ Permanently delete gear and its reminders. To stop using gear but keep its histo
 | `id` | string | yes |  |
 
 API: `deleteGear`, `listGear`
+
+## `settings` (opt-in)
+
+### `update_sport_settings`
+
+**Update sport thresholds** · write (`safe` mode) · idempotent
+
+Set training thresholds for a sport: threshold pace, lactate threshold HR (LTHR), max HR or FTP. Pace and HR zones are defined relative to these, so this changes how future workouts and zones are calculated. Only the fields you pass are changed. Confirm the new values with the user first. Existing activities are only recalculated with apply_sport_settings.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `sport` | string | yes | Activity type whose settings to change, e.g. "Run". |
+| `threshold_pace` | string |  | Threshold pace as "m:ss" in the sport's pace units (e.g. per km). |
+| `lthr` | integer |  |  |
+| `max_hr` | integer |  |  |
+| `ftp_watts` | integer |  |  |
+| `recalc_hr_zones` | boolean |  | Recompute HR zones from the new LTHR/max HR (default false). |
+
+API: `updateSettings`
+
+### `apply_sport_settings`
+
+**Recalculate activities with current settings** · write (`safe` mode) · idempotent
+
+Re-apply the current sport settings (zones, thresholds) to all past activities of that sport, e.g. after changing threshold pace. Runs in the background on Intervals.icu and changes stored zone times and training load of past activities.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `sport` | string | yes | e.g. "Run". |
+
+API: `applyToActivities`
+
+## `chats` (opt-in)
+
+### `add_activity_comment`
+
+**Comment on an activity** · write (`safe` mode)
+
+Add a comment to an activity, e.g. a post-session note. Comments are visible to anyone who can see the activity (followers, coach). Show the exact text to the user and get agreement before posting.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes | Activity id, e.g. "i123456789" (from list_activities or search_activities). |
+| `text` | string | yes |  |
+
+API: `sendActivityMessage`
+
+## `raw` (opt-in)
+
+### `list_api_endpoints`
+
+**List raw API endpoints** · read-only
+
+List the Intervals.icu read endpoints available through api_get, for data no other tool provides (e.g. weather forecast, routes, chats, custom items, sport settings details). Optionally filter by a word in the path or summary.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `filter` | string |  | e.g. "weather", "route", "chat". |
+
+API: 
+
+### `api_get`
+
+**Raw API read** · read-only
+
+Call any Intervals.icu read (GET) endpoint and get its raw JSON (nulls removed, large responses truncated). Use only when no dedicated tool fits; see list_api_endpoints. Replace placeholders with real values, e.g. "/athlete/0/weather-forecast" (0 = the athlete) or "/activity/i123456/weather-summary". Values are in raw API units (meters, seconds, m/s).
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `path` | string | yes | Concrete path, e.g. "/athlete/0/routes". |
+| `query` | object |  | Query parameters, e.g. {"oldest": "2026-01-01"}. |
+
+API: `getActivity`, `findBestEfforts`, `getGapHistogram`, `getActivityHRCurve`, `getHRHistogram`, `getHRTrainingLoadModel`, `getIntervalStats`, `getIntervals`, `listActivityMessages`, `getActivityPaceCurve`, `getPaceHistogram`, `getActivityPowerCurve`, `listActivityPowerCurves_1`, `getPowerHistogram`, `getActivityPowerSpikeModel`, `getPowerVsHR`, `getActivitySegments`, `getActivityStreams`, `getTimeAtHR`, `getActivityWeatherSummary`, `getActivities`, `listSettings`, `getSettings_1`, `listMatchingActivities`, `listPaceDistancesForSport`, `getAthlete`, `listActivities`, `listActivitiesAround`, `searchForIntervals`, `searchForActivities`, `searchForActivitiesFull`, `listActivityHRCurves`, `listActivityPaceCurves`, `listActivityPowerCurves`, `listTags_2`, `getAthleteSummary`, `listChats`, `getAthleteConnections`, `listCustomItems`, `getCustomItem`, `listTags_1`, `listEvents`, `showEvent`, `listFitnessModelEvents`, `listFolders`, `listFolderSharedWith`, `listGear`, `calcDistanceEtc`, `listGroups`, `listAthleteHRCurves`, `getAthleteMMPModel`, `listAthletePaceCurves`, `listAthletePowerCurves`, `getPowerHRCurve`, `getAthleteProfile`, `listAthleteRoutes`, `getAthleteRoute`, `checkMerge`, `getSettings`, `getAthleteTrainingPlan`, `getWeatherConfig`, `getForecast`, `listWellnessRecords`, `getRecord`, `listTags`, `listWorkouts`, `showWorkout`, `showChat`, `listMessages`, `listPaceDistances`, `getSharedEvent`

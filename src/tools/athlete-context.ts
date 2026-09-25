@@ -35,12 +35,12 @@ export function buildAthleteContext(athlete: Athlete): AthleteContext {
 }
 
 /**
- * Returns a memoised loader for the athlete context. A failed load is not cached, so a
- * transient error does not poison the server for the rest of the session.
+ * Returns a memoised loader for the athlete context, plus a way to invalidate it. A failed
+ * load is not cached, so a transient error does not poison the server for the session.
  */
 export function createAthleteLoader(api: IntervalsClient, athleteId: string) {
   let pending: Promise<AthleteContext> | undefined;
-  return (): Promise<AthleteContext> => {
+  const load = (): Promise<AthleteContext> => {
     pending ??= api
       .GET('/api/v1/athlete/{id}', { params: { path: { id: athleteId } } })
       .then((result) => buildAthleteContext(unwrap(result)))
@@ -50,4 +50,8 @@ export function createAthleteLoader(api: IntervalsClient, athleteId: string) {
       });
     return pending;
   };
+  const invalidate = () => {
+    pending = undefined;
+  };
+  return { load, invalidate };
 }

@@ -472,3 +472,45 @@ export const deleteEvents = defineTool({
     };
   },
 });
+
+export const applyPlan = defineTool({
+  name: 'apply_plan',
+  title: 'Put a training plan on the calendar',
+  description:
+    'Copy all workouts of a training plan from the library (a PLAN folder, see ' +
+    'list_workout_library) onto the calendar, starting on a date. Each workout lands on ' +
+    'start date + its plan day. Adds many events: confirm the plan and start date first.',
+  toolset: 'calendar',
+  access: 'write',
+  operations: ['applyPlan', 'listFolders'],
+  input: z.object({
+    plan_id: z.number().int().describe('Id of a PLAN folder from list_workout_library.'),
+    start_date: isoDate.describe('Date of plan day 0 (usually a Monday).'),
+  }),
+  output: z.object({ plan: z.string(), start_date: z.string(), workouts: z.number() }),
+  async handler(args, ctx) {
+    const folders = unwrap(
+      await ctx.api.GET('/api/v1/athlete/{id}/folders', {
+        params: { path: { id: ctx.athleteId } },
+      }),
+    );
+    const plan = (folders ?? []).find((f) => f.id === args.plan_id);
+    if (!plan) throw new RangeError(`No folder or plan with id ${args.plan_id}.`);
+    if (plan.type !== 'PLAN') {
+      throw new RangeError(
+        `"${plan.name}" is a folder, not a training plan. Use create_events instead.`,
+      );
+    }
+    unwrap(
+      await ctx.api.POST('/api/v1/athlete/{id}/events/apply-plan', {
+        params: { path: { id: ctx.athleteId } },
+        body: { folder_id: args.plan_id, start_date_local: `${args.start_date}T00:00:00` },
+      }),
+    );
+    return {
+      plan: plan.name ?? String(args.plan_id),
+      start_date: args.start_date,
+      workouts: plan.children?.length ?? 0,
+    };
+  },
+});

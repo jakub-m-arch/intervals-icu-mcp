@@ -18,8 +18,9 @@ describe('tool registry invariants', () => {
   });
 
   it('declares only operations that exist in the OpenAPI spec', () => {
+    const metaTools = new Set(['list_api_endpoints']);
     for (const tool of ALL_TOOLS) {
-      expect(tool.operations.length, tool.name).toBeGreaterThan(0);
+      if (!metaTools.has(tool.name)) expect(tool.operations.length, tool.name).toBeGreaterThan(0);
       for (const op of tool.operations) expect(specOperations, `${tool.name}: ${op}`).toContain(op);
     }
   });
@@ -30,5 +31,13 @@ describe('tool registry invariants', () => {
       expect(specOperations, op).toContain(op);
       expect(covered.has(op as never), op).toBe(false);
     }
+  });
+
+  it('accounts for every API operation (tool, api_get or documented exclusion)', () => {
+    const covered = new Set<string>(ALL_TOOLS.flatMap((t) => [...t.operations]));
+    const unaccounted = [...specOperations].filter(
+      (op) => op && !covered.has(op) && !(op in EXCLUDED_OPERATIONS),
+    );
+    expect(unaccounted, 'add a tool or an EXCLUDED_OPERATIONS reason').toEqual([]);
   });
 });

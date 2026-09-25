@@ -16,6 +16,7 @@ import {
 } from './analysis.js';
 import { getAthleteProfile, getFitnessSummary } from './athlete.js';
 import {
+  applyPlan,
   createEvents,
   deleteEvents,
   duplicateEvents,
@@ -24,20 +25,32 @@ import {
   markEventDone,
   updateEvent,
 } from './calendar.js';
+import { addActivityComment } from './chats.js';
 import { getAthleteCurves } from './curves.js';
-import { addGearReminder, createGear, deleteGear, listGear, updateGear } from './gear.js';
+import {
+  addGearReminder,
+  createGear,
+  deleteGear,
+  deleteGearReminder,
+  listGear,
+  updateGear,
+  updateGearReminder,
+} from './gear.js';
 import {
   createFolder,
   createWorkouts,
   deleteFolder,
   deleteWorkout,
+  duplicateWorkouts,
   getTrainingPlan,
   getWorkout,
   listWorkoutLibrary,
   updateFolder,
   updateWorkout,
 } from './library.js';
+import { apiGet, listApiEndpoints } from './raw.js';
 import type { AnyTool } from './registry.js';
+import { applySportSettings, updateSportSettings } from './settings.js';
 import { getWellness, updateWellness } from './wellness.js';
 
 /** Every tool the server knows about. Configuration decides which ones are registered. */
@@ -71,6 +84,7 @@ export const ALL_TOOLS: readonly AnyTool[] = [
   updateEvent,
   markEventDone,
   duplicateEvents,
+  applyPlan,
   deleteEvents,
   // library
   listWorkoutLibrary,
@@ -80,6 +94,7 @@ export const ALL_TOOLS: readonly AnyTool[] = [
   updateFolder,
   createWorkouts,
   updateWorkout,
+  duplicateWorkouts,
   deleteWorkout,
   deleteFolder,
   // gear
@@ -87,5 +102,15 @@ export const ALL_TOOLS: readonly AnyTool[] = [
   createGear,
   updateGear,
   addGearReminder,
+  updateGearReminder,
+  deleteGearReminder,
   deleteGear,
+  // settings (opt-in)
+  updateSportSettings,
+  applySportSettings,
+  // chats (opt-in)
+  addActivityComment,
+  // raw (opt-in)
+  listApiEndpoints,
+  apiGet,
 ];

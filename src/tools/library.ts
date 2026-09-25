@@ -398,3 +398,36 @@ export const deleteFolder = defineTool({
     return { deleted: describeFolder(folder, athlete.unitSystem) };
   },
 });
+
+export const duplicateWorkouts = defineTool({
+  name: 'duplicate_workouts',
+  title: 'Repeat plan workouts in later weeks',
+  description:
+    'Copy workouts inside a training plan to later weeks of the plan, e.g. repeat week 1 for ' +
+    'weeks 2–4.',
+  toolset: 'library',
+  access: 'write',
+  operations: ['duplicateWorkouts'],
+  input: z.object({
+    ids: z.array(z.number().int()).min(1).max(MAX_WORKOUTS_PER_CALL),
+    copies: z.number().int().min(1).max(12),
+    weeks_between: z.number().int().min(1).max(8).optional().describe('Default 1.'),
+  }),
+  output: z.object({ created: z.array(WorkoutSummarySchema) }),
+  async handler(args, ctx) {
+    const [athlete, created] = await Promise.all([
+      ctx.athlete(),
+      ctx.api
+        .POST('/api/v1/athlete/{id}/duplicate-workouts', {
+          params: { path: { id: ctx.athleteId } },
+          body: {
+            workoutIds: args.ids,
+            numCopies: args.copies,
+            weeksBetween: args.weeks_between ?? 1,
+          },
+        })
+        .then(unwrap),
+    ]);
+    return { created: (created ?? []).map((w) => summarizeWorkout(w, athlete.unitSystem)) };
+  },
+});

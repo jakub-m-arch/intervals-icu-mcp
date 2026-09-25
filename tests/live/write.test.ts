@@ -10,7 +10,7 @@
 import type { Client } from '@modelcontextprotocol/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createIntervalsClient, unwrap } from '../../src/api/client.js';
-import { loadConfig } from '../../src/config.js';
+import { loadConfig, parseToolsets } from '../../src/config.js';
 import { callTool, connectClient } from '../helpers/mcp.js';
 
 const enabled = Boolean(process.env.INTERVALS_ICU_API_KEY) && process.env.LIVE_WRITE === '1';
@@ -18,7 +18,9 @@ const PREFIX = '[mcp-test]';
 
 describe.skipIf(!enabled)('live write tools (creates and deletes test data)', () => {
   let client: Client;
-  const config = enabled ? { ...loadConfig(), writeMode: 'full' as const } : undefined;
+  const config = enabled
+    ? { ...loadConfig(), writeMode: 'full' as const, toolsets: parseToolsets('all') }
+    : undefined;
 
   beforeAll(async () => {
     client = await connectClient(config);
@@ -95,6 +97,31 @@ describe.skipIf(!enabled)('live write tools (creates and deletes test data)', ()
     expect((deleted.deleted as { workouts_count: number }).workouts_count).toBe(1);
   });
 
+  it('plans: duplicate workouts and apply to the calendar', async () => {
+    const folder = await call('create_folder', { name: `${PREFIX} plan`, kind: 'PLAN' });
+    const planId = (folder.folder as { id: number }).id;
+    const created = await call('create_workouts', {
+      folder_id: planId,
+      workouts: [
+        { name: `${PREFIX} day0`, type: 'Run', description: '- 20m Z2 HR', day: 0 },
+        { name: `${PREFIX} day2`, type: 'Run', description: '- 30m Z2 HR', day: 2 },
+      ],
+    });
+    const [day0] = created.created as Array<{ id: number }>;
+    const copies = await call('duplicate_workouts', { ids: [day0?.id], copies: 1 });
+    expect((copies.created as Array<{ day: number }>)[0]?.day).toBe(7);
+
+    const applied = await call('apply_plan', { plan_id: planId, start_date: '2027-12-06' });
+    expect(applied.workouts).toBe(3);
+    const events = await call('list_events', { oldest: '2027-12-06', newest: '2027-12-19' });
+    const planned = (events.events as Array<{ id: number; date: string; name: string }>).filter(
+      (e) => e.name.startsWith(PREFIX),
+    );
+    expect(planned.map((e) => e.date).sort()).toEqual(['2027-12-06', '2027-12-08', '2027-12-13']);
+    await call('delete_events', { ids: planned.map((e) => e.id) });
+    await call('delete_folder', { id: planId });
+  });
+
   it('gear: create, reminder, retire, delete', async () => {
     const created = await call('create_gear', {
       type: 'Shoes',
@@ -109,8 +136,18 @@ describe.skipIf(!enabled)('live write tools (creates and deletes test data)', ()
       distance_km: 600,
     });
     expect((withReminder.gear as { reminders: unknown[] }).reminders).toHaveLength(1);
+    const reminderId = (withReminder.gear as { reminders: Array<{ id: number }> }).reminders[0]?.id;
+    const reset = await call('update_gear_reminder', {
+      gear_id: gear.id,
+      reminder_id: reminderId,
+      reset: true,
+    });
+    expect((reset.gear as { reminders: unknown[] }).reminders).toHaveLength(1);
+
+    await call('delete_gear_reminder', { gear_id: gear.id, reminder_id: reminderId });
+
     const retired = await call('update_gear', { id: gear.id, retired: '2027-12-31' });
-    expect((retired.gear as { retired: string }).retired).toBe('2027-12-31');
+    expect((retired.gear as { retired: string; reminders?: unknown[] }).retired).toBe('2027-12-31');
     await call('delete_gear', { id: gear.id });
   });
 
@@ -127,6 +164,9 @@ describe.skipIf(!enabled)('live write tools (creates and deletes test data)', ()
     expect(activity.pace).toBe('6:00 /km');
     const updated = await call('update_activity', { id: activity.id, rpe: 4, feel: 2 });
     expect(updated.activity).toMatchObject({ rpe: 4, feel: 2 });
+    await call('add_activity_comment', { id: activity.id, text: `${PREFIX} comment` });
+    const comments = await call('list_activity_comments', { id: activity.id });
+    expect(comments.comments).toEqual([expect.objectContaining({ text: `${PREFIX} comment` })]);
 
     const planned = await call('create_events', {
       events: [

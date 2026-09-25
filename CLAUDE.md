@@ -28,6 +28,9 @@ are in English and should be ready for contributors.
   process concerns in it.
 - **Never write to stdout** (`console.log`, `process.stdout`). stdout carries the MCP
   protocol over stdio. Use `console.error`. Biome enforces this.
+- Every API operation must be accounted for (`tests/unit/coverage.test.ts`): a dedicated
+  tool, the opt-in `api_get` for reads, or a reason in `src/tools/coverage.ts`. The weekly
+  `spec-drift` workflow opens a PR when the upstream spec changes.
 - Tools are hand-designed, not generated 1:1 from OpenAPI. Each tool declares:
   - its toolset,
   - its access level (`read` / `write` / `destructive`),
@@ -59,6 +62,9 @@ are in English and should be ready for contributors.
   - Client-provided event `uid`s are ignored, so `upsertOnUid` cannot deduplicate.
     `create_events` checks for duplicates itself.
   - Manual activities and `mark-done` fail with 422 for future dates.
+  - `replace` for gear only works for components; `component: true` on create is ignored.
+  - Event/workout `apply-plan` puts plan workouts on start date + `day`.
+    `duplicate-workouts` adds copies 7 days later per week.
   - Workout text is parsed server-side into `workout_doc`. Unparseable text is still
     accepted, with 0 steps.
   - `400m` means minutes (meters are `400mtr`), bpm ranges are not parsed, and inline

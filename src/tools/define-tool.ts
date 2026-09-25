@@ -20,6 +20,8 @@ export interface ToolContext {
   athleteId: string;
   /** Lazily loaded, cached athlete settings (time zone, units, sport settings). */
   athlete(): Promise<AthleteContext>;
+  /** Drops the cached athlete settings (call after changing them). */
+  invalidateAthlete(): void;
 }
 
 export interface ToolDefinition<

@@ -41,10 +41,12 @@ export function createServer({ config, api, tools = ALL_TOOLS }: CreateServerOpt
     { instructions: INSTRUCTIONS },
   );
 
+  const athlete = createAthleteLoader(client, config.athleteId);
   const context = {
     api: client,
     athleteId: config.athleteId,
-    athlete: createAthleteLoader(client, config.athleteId),
+    athlete: athlete.load,
+    invalidateAthlete: athlete.invalidate,
   };
   const toolNames = registerTools(server, tools, { config, context });
   registerPrompts(server, new Set(toolNames));

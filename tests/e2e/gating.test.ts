@@ -1,6 +1,7 @@
 import type { Client } from '@modelcontextprotocol/client';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { WriteMode } from '../../src/config.js';
+import { parseToolsets } from '../../src/config.js';
 import { connectClient, testConfig } from '../helpers/mcp.js';
 
 let client: Client | undefined;
@@ -15,6 +16,16 @@ async function toolsIn(writeMode: WriteMode) {
   client = undefined;
   return tools;
 }
+
+describe('toolsets', () => {
+  it('keeps opt-in toolsets off by default', async () => {
+    client = await connectClient(testConfig({ toolsets: parseToolsets('default') }));
+    const names = (await client.listTools()).tools.map((t) => t.name);
+    for (const optIn of ['api_get', 'update_sport_settings', 'add_activity_comment']) {
+      expect(names).not.toContain(optIn);
+    }
+  });
+});
 
 describe('write modes', () => {
   it('read-only exposes no tool that changes data', async () => {
@@ -39,6 +50,7 @@ describe('write modes', () => {
       'delete_events',
       'delete_folder',
       'delete_gear',
+      'delete_gear_reminder',
       'delete_workout',
     ]);
     for (const tool of tools.filter((t) => t.name.startsWith('delete_'))) {

@@ -7,6 +7,7 @@ import { defineTool } from './define-tool.js';
 import { isoDate } from './schemas.js';
 
 const ReminderSchema = z.object({
+  id: z.number().optional(),
   name: z.string().optional(),
   used_percent: z.number().optional(),
   distance: z.string().optional().describe('Used / limit'),
@@ -73,6 +74,7 @@ export const listGear = defineTool({
             reminders: g.reminders?.length
               ? g.reminders.map((r) =>
                   compact({
+                    id: r.id ?? undefined,
                     name: r.name ?? undefined,
                     used_percent: round(r.percent_used),
                     distance: usedOf(r.distance_used, r.distance, dist),
@@ -118,7 +120,11 @@ function describeGear(g: Gear, system: UnitSystem) {
     retired: g.retired?.slice(0, 10),
     reminders: g.reminders?.length
       ? g.reminders.map((r) =>
-          compact({ name: r.name ?? undefined, used_percent: round(r.percent_used) }),
+          compact({
+            id: r.id ?? undefined,
+            name: r.name ?? undefined,
+            used_percent: round(r.percent_used),
+          }),
         )
       : undefined,
   });
@@ -131,7 +137,13 @@ const WrittenGearSchema = z.object({
   distance: z.string().optional(),
   retired: z.string().optional(),
   reminders: z
-    .array(z.object({ name: z.string().optional(), used_percent: z.number().optional() }))
+    .array(
+      z.object({
+        id: z.number().optional(),
+        name: z.string().optional(),
+        used_percent: z.number().optional(),
+      }),
+    )
     .optional(),
 });
 
@@ -179,8 +191,8 @@ export const updateGear = defineTool({
   name: 'update_gear',
   title: 'Update or retire gear',
   description:
-    'Rename gear, change its notes, or retire it (e.g. worn-out shoes). Only the fields you ' +
-    'pass are changed.',
+    'Rename gear, change its notes, or retire it (e.g. worn-out shoes; then add the new pair ' +
+    'with create_gear). Only the fields you pass are changed.',
   toolset: 'gear',
   access: 'write',
   idempotent: true,
@@ -285,5 +297,69 @@ export const deleteGear = defineTool({
       }),
     );
     return { deleted: describeGear(gear, athlete.unitSystem) };
+  },
+});
+
+export const updateGearReminder = defineTool({
+  name: 'update_gear_reminder',
+  title: 'Reset, snooze or change a gear reminder',
+  description:
+    'Reset a gear reminder after doing the maintenance (starts counting again), snooze it, ' +
+    'or change its limits.',
+  toolset: 'gear',
+  access: 'write',
+  operations: ['updateReminder', 'listGear'],
+  input: z.object({
+    gear_id: z.string(),
+    reminder_id: z.number().int().describe('Reminder id (from list_gear with details).'),
+    reset: z.boolean().optional().describe('Start counting from zero again.'),
+    snooze_days: z.number().int().min(0).max(365).optional(),
+    name: z.string().min(1).max(200).optional(),
+    distance_km: z.number().positive().optional(),
+    days: z.number().int().positive().optional(),
+  }),
+  output: z.object({ gear: WrittenGearSchema }),
+  async handler(args, ctx) {
+    const [athlete, gear] = await Promise.all([
+      ctx.athlete(),
+      ctx.api
+        .PUT('/api/v1/athlete/{id}/gear/{gearId}/reminder/{reminderId}', {
+          params: {
+            path: { id: ctx.athleteId, gearId: args.gear_id, reminderId: args.reminder_id },
+            query: { reset: args.reset ?? false, snoozeDays: args.snooze_days ?? 0 },
+          },
+          body: compact({
+            name: args.name,
+            distance: args.distance_km === undefined ? undefined : args.distance_km * 1000,
+            days: args.days,
+          }),
+        })
+        .then(unwrap),
+    ]);
+    return { gear: describeGear(gear, athlete.unitSystem) };
+  },
+});
+
+export const deleteGearReminder = defineTool({
+  name: 'delete_gear_reminder',
+  title: 'Delete a gear reminder',
+  description: 'Permanently delete a reminder from gear. Confirm with the user first.',
+  toolset: 'gear',
+  access: 'destructive',
+  operations: ['deleteReminder'],
+  input: z.object({ gear_id: z.string(), reminder_id: z.number().int() }),
+  output: z.object({ gear: WrittenGearSchema }),
+  async handler(args, ctx) {
+    const [athlete, gear] = await Promise.all([
+      ctx.athlete(),
+      ctx.api
+        .DELETE('/api/v1/athlete/{id}/gear/{gearId}/reminder/{reminderId}', {
+          params: {
+            path: { id: ctx.athleteId, gearId: args.gear_id, reminderId: args.reminder_id },
+          },
+        })
+        .then(unwrap),
+    ]);
+    return { gear: describeGear(gear, athlete.unitSystem) };
   },
 });

@@ -9,10 +9,7 @@ export const TOOLSETS = [
   'library',
   'gear',
   'settings',
-  'custom_items',
   'chats',
-  'weather',
-  'routes',
   'raw',
 ] as const;
 
