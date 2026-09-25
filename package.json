@@ -39,7 +39,7 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "start": "node dist/index.mjs",
-    "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.mjs",
+    "inspect": "npm run build && npx @modelcontextprotocol/inspector node --env-file-if-exists=.env dist/index.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -48,7 +48,10 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
-    "prepublishOnly": "npm run check"
+    "prepublishOnly": "npm run check",
+    "openapi:update": "node scripts/update-openapi.ts",
+    "openapi:generate": "node scripts/update-openapi.ts --offline",
+    "test:live": "node --env-file-if-exists=.env ./node_modules/vitest/vitest.mjs run --config vitest.live.config.ts"
   },
   "publishConfig": {
     "access": "public",
@@ -56,6 +59,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",
+    "openapi-fetch": "^0.17.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -63,8 +67,15 @@
     "@modelcontextprotocol/client": "^2.1.0",
     "@types/node": "^22.20.4",
     "@vitest/coverage-v8": "^5.0.1",
+    "msw": "^2.15.0",
+    "openapi-typescript": "^7.13.0",
     "tsdown": "^0.23.0",
     "typescript": "~6.0.3",
     "vitest": "^5.0.1"
+  },
+  "overrides": {
+    "openapi-typescript": {
+      "typescript": "$typescript"
+    }
   }
 }

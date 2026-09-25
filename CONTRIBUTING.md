@@ -26,7 +26,29 @@ Test fixtures must be anonymised.
 |---|---|
 | `src/index.ts` | CLI entry point (stdio transport) |
 | `src/server.ts` | `createServer()`: builds the MCP server (transport-agnostic) |
-| `tests/` | Vitest tests (`e2e/` runs a real MCP client against the server in memory) |
+| `src/config.ts` | Environment and CLI configuration |
+| `src/api/` | Typed Intervals.icu client (`schema.d.ts` is generated, do not edit) |
+| `src/tools/` | Tool definitions, grouped by toolset, plus the registry |
+| `src/format/` | Unit, date and response formatting |
+| `openapi/` | Snapshot of the Intervals.icu OpenAPI spec |
+| `tests/unit`, `tests/e2e` | Vitest tests (e2e runs a real MCP client against the server with the API mocked by msw) |
+| `tests/live` | Opt-in, read-only smoke tests against the real API |
+
+## Adding a tool
+
+1. Define it with `defineTool()` in the matching `src/tools/<toolset>.ts` file. Set
+   `access` (`read`, `write` or `destructive`), `operations` (the OpenAPI operationIds it
+   uses), and zod `input` and `output` schemas.
+2. Add it to `ALL_TOOLS` in `src/tools/index.ts`.
+3. Shape the output for a language model: human-readable units, no internal fields, and
+   limits on list sizes.
+4. Add e2e tests with msw fixtures in `tests/fixtures/`. Fixtures must be synthetic, and
+   `satisfies` keeps them in line with the OpenAPI types.
+
+## Updating the API spec
+
+`npm run openapi:update` downloads the latest spec and regenerates `src/api/schema.d.ts`.
+`npm run typecheck` then shows what has changed.
 
 ## Guidelines
 

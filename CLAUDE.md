@@ -13,7 +13,11 @@ are in English and should be ready for contributors.
 - `npm run check`: lint + typecheck + tests + build. Run it before every commit.
 - `npm test` / `npm run test:watch`: Vitest.
 - `npm run lint:fix`: apply Biome formatting and safe lint fixes.
-- `npm run inspect`: build and open the MCP Inspector.
+- `npm run inspect`: build and open the MCP Inspector (loads `.env`).
+- `npm run test:live`: read-only smoke tests against the real API (needs `.env`). Set
+  `LIVE_OUTPUT=/tmp/out.txt` to capture the raw tool outputs.
+- `npm run openapi:update` / `openapi:generate`: refresh the spec snapshot / regenerate
+  `src/api/schema.d.ts`. Never edit the generated file by hand.
 
 ## Architecture rules
 
@@ -31,6 +35,13 @@ are in English and should be ready for contributors.
   API key in any log or error text.
 - Tool output should be compact and LLM-friendly: human-readable units (pace in min/km,
   durations in h:mm:ss), limits, and explicit truncation notes.
+- Domain gotchas:
+  - Speeds from the API are in m/s.
+  - Pace units are set per sport (`pace_units`).
+  - Running cadence is stored per leg, so double it to get spm.
+  - Pace zones are % of threshold *speed*, so higher % means a faster pace.
+  - Form-% zones are meaningless at very low CTL.
+  - `athlete-summary` also returns followed athletes.
 
 ## Conventions
 

@@ -8,8 +8,8 @@ A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server for
 assistants read your training data and help you plan training.
 
 > [!WARNING]
-> **Early development.** The server does not expose any tools yet. See the
-> [roadmap](#roadmap) below.
+> **Early development.** The first read-only tools work, but the package is not
+> published to npm yet. See the [roadmap](#roadmap) below.
 
 > [!NOTE]
 > This is an independent open-source project. It is **not affiliated with,
@@ -29,6 +29,61 @@ assistants read your training data and help you plan training.
   and similar clients; later, Streamable HTTP with OAuth for claude.ai on web
   and mobile.
 
+## Tools
+
+| Tool | What it does |
+|---|---|
+| `get_athlete_profile` | Profile, units, time zone, and per-sport thresholds and zones (HR, pace, power) |
+| `get_fitness_summary` | Fitness (CTL), fatigue (ATL), form (TSB) with the form zone, a daily series and weekly totals |
+| `list_activities` | Activities in a date range with pace/GAP, HR and load, plus totals per sport |
+| `get_activity` | One activity in detail: time in zones, decoupling, HR recovery and, optionally, intervals |
+
+All tools are currently read-only. Write tools (planning workouts, logging wellness) are
+coming in 0.3.
+
+## Configuration
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `INTERVALS_ICU_API_KEY` | yes | – | Intervals.icu → Settings → Developer Settings |
+| `INTERVALS_ICU_ATHLETE_ID` | no | `0` | `0` means the owner of the API key |
+| `INTERVALS_ICU_TOOLSETS` | no | `default` | Comma-separated toolsets, `default` or `all` |
+| `INTERVALS_ICU_WRITE_MODE` | no | `safe` | `read-only`, `safe` (create/update) or `full` (also delete) |
+
+`--athlete-id`, `--toolsets` and `--write-mode` CLI flags override the environment
+variables. The API key can only be set through the environment, because command-line
+arguments are visible to other processes.
+
+## Running from source
+
+Until the npm package is published, build the server locally:
+
+```bash
+git clone https://github.com/jakub-m-arch/intervals-icu-mcp.git
+cd intervals-icu-mcp
+npm install && npm run build
+```
+
+**Claude Code**
+
+```bash
+claude mcp add intervals-icu -e INTERVALS_ICU_API_KEY=your-key -- node /absolute/path/to/intervals-icu-mcp/dist/index.mjs
+```
+
+**Claude Desktop**: add the following to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "intervals-icu": {
+      "command": "node",
+      "args": ["/absolute/path/to/intervals-icu-mcp/dist/index.mjs"],
+      "env": { "INTERVALS_ICU_API_KEY": "your-key" }
+    }
+  }
+}
+```
+
 ## Roadmap
 
 | Version | Scope |
@@ -47,7 +102,8 @@ Requirements: Node.js ≥ 22.12 (see `.nvmrc`).
 ```bash
 npm install
 npm run check      # lint + typecheck + tests + build
-npm run inspect    # open the server in the MCP Inspector
+npm run inspect    # open the server in the MCP Inspector (reads .env)
+npm run test:live  # read-only smoke tests against the real API (needs .env)
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
