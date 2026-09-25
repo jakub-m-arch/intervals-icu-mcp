@@ -13,10 +13,10 @@ import {
 } from '../format/units.js';
 import type { SportSettings } from './athlete-context.js';
 import { defineTool } from './define-tool.js';
+import { isoDate } from './schemas.js';
 
 const optStr = z.string().optional();
 const optNum = z.number().optional();
-const isoDate = z.string().refine(isIsoDate, 'Expected a date in YYYY-MM-DD format');
 
 const ZoneSchema = z.object({ zone: z.string(), name: optStr, range: optStr });
 

@@ -51,7 +51,9 @@
     "prepublishOnly": "npm run check",
     "openapi:update": "node scripts/update-openapi.ts",
     "openapi:generate": "node scripts/update-openapi.ts --offline",
-    "test:live": "node --env-file-if-exists=.env ./node_modules/vitest/vitest.mjs run --config vitest.live.config.ts"
+    "test:live": "node --env-file-if-exists=.env ./node_modules/vitest/vitest.mjs run --config vitest.live.config.ts",
+    "docs:generate": "tsx scripts/gen-docs.ts",
+    "docs:check": "npm run docs:generate && git diff --exit-code docs/"
   },
   "publishConfig": {
     "access": "public",
@@ -70,6 +72,7 @@
     "msw": "^2.15.0",
     "openapi-typescript": "^7.13.0",
     "tsdown": "^0.23.0",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "vitest": "^5.0.1"
   },

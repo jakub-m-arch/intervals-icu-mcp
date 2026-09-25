@@ -174,3 +174,163 @@ export const athleteSummary = [
     byCategory: [],
   },
 ] satisfies S['SummaryWithCats'][];
+
+// --- Phase 2 fixtures -------------------------------------------------------------------
+
+/** 1 Hz streams for a 10-minute segment: 5 min running (~5:00 /km) then 5 min walking. */
+const seconds = Array.from({ length: 600 }, (_, i) => i);
+export const streams = [
+  { type: 'time', data: seconds },
+  { type: 'heartrate', data: seconds.map((i) => (i < 300 ? 150 : 120)) },
+  { type: 'velocity_smooth', data: seconds.map((i) => (i < 300 ? 1000 / 300 : 1000 / 690)) },
+  { type: 'cadence', data: seconds.map((i) => (i < 300 ? 85 : 55)) },
+  {
+    type: 'distance',
+    data: seconds.map((i) => (i < 300 ? i * (1000 / 300) : 1000 + (i - 300) * (1000 / 690))),
+  },
+  { type: 'latlng', data: seconds.map(() => 52.1), data2: seconds.map(() => 21.0) },
+  { type: 'watts', data: [], allNull: true },
+]; // The spec types `data` as an object; the real API returns arrays.
+
+export const hrHistogram = [
+  { min: 115, max: 119, secs: 300 },
+  { min: 145, max: 149, secs: 0 },
+  { min: 150, max: 154, secs: 300 },
+];
+
+export const bestEfforts = {
+  efforts: [
+    { start_index: 10, end_index: 310, average: 1000 / 300, distance: 1000 },
+    { start_index: 0, end_index: 301, average: 3.3, distance: 1000 },
+  ],
+} satisfies S['BestEfforts'];
+
+export const intervalStats = {
+  type: 'WORK',
+  distance: 1000,
+  moving_time: 300,
+  average_speed: 1000 / 300,
+  average_heartrate: 150,
+  average_cadence: 85,
+} satisfies S['Interval'];
+
+export const paceCurves = {
+  list: [
+    {
+      id: '42d',
+      label: '42 days',
+      start_date_local: '2026-08-15T00:00:00',
+      end_date_local: '2026-09-26T00:00:00',
+      distance: [400, 800, 1000, 5000],
+      values: [100, 210, 270, 1500],
+      activity_id: ['i2000001', 'i2000001', 'i2000001', 'i2000001'],
+      paceModels: [{ type: 'CS', criticalSpeed: 1000 / 300, dPrime: 120.4 }],
+    },
+  ],
+  activities: { i2000001: { name: 'Easy run', start_date_local: '2026-09-22T07:15:00' } },
+};
+
+export const hrCurves = {
+  list: [
+    {
+      id: '90d',
+      label: '90 days',
+      secs: [5, 60, 300, 1200],
+      values: [185, 180, 172, 165],
+      activity_id: ['i2000001', 'i2000001', 'i2000001', 'i2000001'],
+    },
+  ],
+  activities: {},
+};
+
+export const wellnessDays = [
+  {
+    id: '2026-09-24',
+    restingHR: 55,
+    hrv: 60,
+    sleepSecs: 26_000,
+    sleepScore: 80,
+    soreness: 2,
+    comments: ' Legs heavy ',
+  },
+  { id: '2026-09-23', restingHR: 51, hrv: 70, sleepSecs: 28_000, sleepScore: 90 },
+] satisfies S['Wellness'][];
+
+export const events = [
+  {
+    id: 11,
+    start_date_local: '2026-09-27T00:00:00',
+    category: 'WORKOUT',
+    type: 'Run',
+    name: 'Intervals',
+    description: 'Warmup\n- 10m Z2 Pace\n\nMain set 4x\n- 3m Z4 Pace\n- 2m Z1 Pace',
+    moving_time: 2700,
+    distance: 7000,
+    icu_training_load: 60,
+    target: 'PACE',
+  },
+  {
+    id: 10,
+    start_date_local: '2026-09-26T18:30:00',
+    category: 'NOTE',
+    name: 'Physio',
+  },
+  {
+    id: 12,
+    start_date_local: '2026-10-01T00:00:00',
+    end_date_local: '2026-10-05T00:00:00',
+    category: 'HOLIDAY',
+    name: 'Trip',
+  },
+] satisfies S['Event'][];
+
+export const workout = {
+  id: 501,
+  name: 'Tempo 3x10',
+  type: 'Run',
+  folder_id: 900,
+  description: '- 3x10m Z3 Pace',
+  moving_time: 3000,
+  icu_training_load: 70,
+} satisfies S['Workout'];
+
+export const folders = [
+  { id: 900, type: 'FOLDER', name: 'Run workouts', children: [workout] },
+  {
+    id: 901,
+    type: 'PLAN',
+    name: '5k beginner',
+    duration_weeks: 8,
+    activity_types: ['Run'],
+    hours_per_week_min: 2,
+    hours_per_week_max: 3,
+    children: [{ ...workout, id: 502, day: 3 }],
+  },
+] satisfies S['Folder'][];
+
+export const gear = [
+  {
+    id: 'g1',
+    type: 'Shoes',
+    name: 'Daily trainers',
+    distance: 412_500,
+    time: 140_000,
+    activities: 52,
+    reminders: [
+      { name: 'Replace', distance: 600_000, distance_used: 412_500, percent_used: 68.75 },
+    ],
+  },
+  { id: 'g2', type: 'Shoes', name: 'Old racers', distance: 800_000, retired: '2026-01-01' },
+  { id: 'b1', type: 'Bike', name: 'Commuter', distance: 1_000_000 },
+] satisfies S['Gear'][];
+
+export const comments = [
+  {
+    id: 1,
+    name: 'Coach',
+    created: '2026-09-22T09:00:00Z',
+    content: 'Nice even pacing!',
+    type: 'TEXT',
+  },
+  { id: 2, name: 'Coach', content: 'removed', deleted: '2026-09-22T10:00:00Z', type: 'TEXT' },
+] satisfies S['Message'][];

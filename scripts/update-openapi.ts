@@ -46,9 +46,27 @@ function normalizeDefaultResponses(spec: Spec): void {
   }
 }
 
+type Parameter = { name: string; in: string; required?: boolean };
+
+/**
+ * Known inaccuracies in the published spec. Each patch must be verified against the real
+ * API before being added here.
+ */
+function patchKnownSpecIssues(spec: Spec): void {
+  for (const pathItem of Object.values(spec.paths)) {
+    for (const op of Object.values(pathItem) as Array<{ parameters?: Parameter[] }>) {
+      for (const param of op.parameters ?? []) {
+        // The curve comparison filters (f1..f3) are optional; the API works without them.
+        if (param.in === 'query' && /^f[123]$/.test(param.name)) param.required = false;
+      }
+    }
+  }
+}
+
 async function generateTypes(): Promise<void> {
   const spec: Spec = JSON.parse(await readFile(SPEC_PATH, 'utf8'));
   normalizeDefaultResponses(spec);
+  patchKnownSpecIssues(spec);
   // biome-ignore lint/suspicious/noExplicitAny: openapi-typescript accepts a loosely typed document
   const ast = await openapiTS(spec as any, { alphabetize: true });
   const header = `/**

@@ -32,6 +32,8 @@ jobs:
         run: npm run openapi:generate && git diff --exit-code src/api/schema.d.ts
       - run: npm run typecheck
       - run: npm test
+      - name: Generated docs are up to date
+        run: npm run docs:check
       - run: npm run build
       - name: Check package contents
         run: npm pack --dry-run

@@ -11,11 +11,10 @@ import {
   summarizeInterval,
 } from '../format/activity.js';
 import { compact } from '../format/compact.js';
-import { isIsoDate, resolveRange, todayIn } from '../format/dates.js';
+import { resolveRange, todayIn } from '../format/dates.js';
 import { formatDistance, formatDuration, round } from '../format/units.js';
 import { defineTool } from './define-tool.js';
-
-const isoDate = z.string().refine(isIsoDate, 'Expected a date in YYYY-MM-DD format');
+import { activityId, isoDate } from './schemas.js';
 
 const DEFAULT_LIST_DAYS = 30;
 const DEFAULT_LIMIT = 50;
@@ -149,7 +148,7 @@ export const getActivity = defineTool({
   access: 'read',
   operations: ['getActivity'],
   input: z.object({
-    id: z.string().min(1).describe('Activity id, e.g. "i123456789".'),
+    id: activityId,
     include_intervals: z
       .boolean()
       .optional()
@@ -198,3 +197,65 @@ function rawFields(activity: object): Record<string, unknown> {
     ),
   );
 }
+
+export const searchActivities = defineTool({
+  name: 'search_activities',
+  title: 'Search activities',
+  description:
+    'Search all activities by name (case-insensitive substring) or by tag (start the query ' +
+    'with #, e.g. "#race"). Use it to find specific sessions regardless of date.',
+  toolset: 'activities',
+  access: 'read',
+  operations: ['searchForActivities'],
+  input: z.object({
+    query: z.string().min(1).describe('Text in the activity name, or "#tag" for an exact tag.'),
+    limit: z.number().int().min(1).max(MAX_LIMIT).optional().describe('Default 20.'),
+  }),
+  output: z.object({ count: z.number(), activities: z.array(ActivitySummarySchema) }),
+  async handler(args, ctx) {
+    const [athlete, found] = await Promise.all([
+      ctx.athlete(),
+      ctx.api
+        .GET('/api/v1/athlete/{id}/activities/search', {
+          params: {
+            path: { id: ctx.athleteId },
+            query: { q: args.query, limit: args.limit ?? 20 },
+          },
+        })
+        .then(unwrap),
+    ]);
+    const activities = (found ?? []).map((a) => summarizeActivity(a as Activity, athlete));
+    return { count: activities.length, activities };
+  },
+});
+
+export const listActivityComments = defineTool({
+  name: 'list_activity_comments',
+  title: 'List activity comments',
+  description: 'List comments and notes (e.g. from a coach or the athlete) on one activity.',
+  toolset: 'activities',
+  access: 'read',
+  operations: ['listActivityMessages'],
+  input: z.object({ id: activityId }),
+  output: z.object({
+    comments: z.array(
+      z.object({ author: z.string().optional(), created: z.string().optional(), text: z.string() }),
+    ),
+  }),
+  async handler(args, ctx) {
+    const messages = unwrap(
+      await ctx.api.GET('/api/v1/activity/{id}/messages', { params: { path: { id: args.id } } }),
+    );
+    return {
+      comments: (messages ?? [])
+        .filter((m) => !m.deleted && m.content)
+        .map((m) =>
+          compact({
+            author: m.name ?? undefined,
+            created: m.created?.slice(0, 16).replace('T', ' '),
+            text: String(m.content),
+          }),
+        ),
+    };
+  },
+});

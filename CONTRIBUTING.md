@@ -39,7 +39,8 @@ Test fixtures must be anonymised.
 1. Define it with `defineTool()` in the matching `src/tools/<toolset>.ts` file. Set
    `access` (`read`, `write` or `destructive`), `operations` (the OpenAPI operationIds it
    uses), and zod `input` and `output` schemas.
-2. Add it to `ALL_TOOLS` in `src/tools/index.ts`.
+2. Add it to `ALL_TOOLS` in `src/tools/index.ts`, then run `npm run docs:generate` to update
+   `docs/tools.md` and `docs/coverage.md`. CI fails if the generated docs are stale.
 3. Shape the output for a language model: human-readable units, no internal fields, and
    limits on list sizes.
 4. Add e2e tests with msw fixtures in `tests/fixtures/`. Fixtures must be synthetic, and

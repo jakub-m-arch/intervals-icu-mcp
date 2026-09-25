@@ -1,6 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { createIntervalsClient, type IntervalsClient } from './api/client.js';
 import type { Config } from './config.js';
+import { registerPrompts } from './prompts/index.js';
+import { registerResources } from './resources/index.js';
 import { createAthleteLoader } from './tools/athlete-context.js';
 import { ALL_TOOLS } from './tools/index.js';
 import { type AnyTool, registerTools } from './tools/registry.js';
@@ -36,14 +38,14 @@ export function createServer({ config, api, tools = ALL_TOOLS }: CreateServerOpt
     { instructions: INSTRUCTIONS },
   );
 
-  registerTools(server, tools, {
-    config,
-    context: {
-      api: client,
-      athleteId: config.athleteId,
-      athlete: createAthleteLoader(client, config.athleteId),
-    },
-  });
+  const context = {
+    api: client,
+    athleteId: config.athleteId,
+    athlete: createAthleteLoader(client, config.athleteId),
+  };
+  const toolNames = registerTools(server, tools, { config, context });
+  registerPrompts(server, new Set(toolNames));
+  registerResources(server, context);
 
   return server;
 }

@@ -31,15 +31,26 @@ assistants read your training data and help you plan training.
 
 ## Tools
 
-| Tool | What it does |
-|---|---|
-| `get_athlete_profile` | Profile, units, time zone, and per-sport thresholds and zones (HR, pace, power) |
-| `get_fitness_summary` | Fitness (CTL), fatigue (ATL), form (TSB) with the form zone, a daily series and weekly totals |
-| `list_activities` | Activities in a date range with pace/GAP, HR and load, plus totals per sport |
-| `get_activity` | One activity in detail: time in zones, decoupling, HR recovery and, optionally, intervals |
+19 read-only tools in the default toolsets. The full reference, generated from the code, is
+in [docs/tools.md](docs/tools.md), and API coverage is tracked in [docs/coverage.md](docs/coverage.md).
 
-All tools are currently read-only. Write tools (planning workouts, logging wellness) are
-coming in 0.3.
+| Toolset | Tools |
+|---|---|
+| `athlete` | `get_athlete_profile` (zones and thresholds), `get_fitness_summary` (fitness/fatigue/form) |
+| `activities` | `list_activities`, `search_activities`, `get_activity`, `list_activity_comments` |
+| `analysis` | `get_activity_streams`, `get_activity_histogram`, `get_activity_best_efforts`, `get_activity_segment_stats`, `search_intervals` |
+| `curves` | `get_athlete_curves` (personal bests, critical speed) |
+| `wellness` | `get_wellness` (HRV, resting HR, sleep, subjective ratings) |
+| `calendar` | `list_events`, `get_event` |
+| `library` | `list_workout_library`, `get_workout`, `get_training_plan` |
+| `gear` | `list_gear` (e.g. shoe mileage) |
+
+**Prompts** (slash commands in most clients): `weekly-review`, `analyze-activity`,
+`recovery-check`, `plan-next-week`, `race-prep`.
+
+**Resources:** `intervals://athlete/profile`.
+
+Write tools (planning workouts, logging wellness) are coming in 0.3.
 
 ## Configuration
 

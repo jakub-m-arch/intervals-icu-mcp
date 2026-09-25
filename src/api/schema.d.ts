@@ -8629,15 +8629,15 @@ export interface operations {
     };
     listAthleteHRCurves: {
         parameters: {
-            query: {
+            query?: {
                 /** @description Comma separated list of curves to return (default last year) */
                 curves?: string[];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f1: components["schemas"]["ActivityFilter"][];
+                f1?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f2: components["schemas"]["ActivityFilter"][];
+                f2?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f3: components["schemas"]["ActivityFilter"][];
+                f3?: components["schemas"]["ActivityFilter"][];
                 /** @description Only consider activities matching all the filters in this list */
                 filters?: components["schemas"]["ActivityFilter"][];
                 newest?: string;
@@ -8693,15 +8693,15 @@ export interface operations {
     };
     listAthletePaceCurves: {
         parameters: {
-            query: {
+            query?: {
                 /** @description Comma separated list of curves to return (default last year) */
                 curves?: string[];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f1: components["schemas"]["ActivityFilter"][];
+                f1?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f2: components["schemas"]["ActivityFilter"][];
+                f2?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f3: components["schemas"]["ActivityFilter"][];
+                f3?: components["schemas"]["ActivityFilter"][];
                 /** @description Only consider activities matching all the filters in this list */
                 filters?: components["schemas"]["ActivityFilter"][];
                 /** @description Return gradient adjusted pace curves */
@@ -8741,11 +8741,11 @@ export interface operations {
                 /** @description Comma separated list of curves to return (default last year) */
                 curves?: string[];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f1: components["schemas"]["ActivityFilter"][];
+                f1?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f2: components["schemas"]["ActivityFilter"][];
+                f2?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
-                f3: components["schemas"]["ActivityFilter"][];
+                f3?: components["schemas"]["ActivityFilter"][];
                 /** @description Only consider activities matching all the filters in this list */
                 filters?: components["schemas"]["ActivityFilter"][];
                 includeRanks?: boolean;

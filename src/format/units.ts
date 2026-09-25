@@ -45,6 +45,13 @@ export function formatDuration(seconds: Num): string | undefined {
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
 }
 
+/** Seconds → `7h 10m` (rounded to minutes), for long durations such as sleep. */
+export function formatHoursMinutes(seconds: Num): string | undefined {
+  if (!isNum(seconds) || seconds < 0) return undefined;
+  const minutes = Math.round(seconds / 60);
+  return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`;
+}
+
 /** Speed in m/s → pace such as `5:23 /km`. Returns undefined when not applicable. */
 export function formatPace(speedMps: Num, units: PaceUnits): string | undefined {
   const value = formatPaceValue(speedMps, units);
@@ -55,6 +62,11 @@ export function formatPace(speedMps: Num, units: PaceUnits): string | undefined 
 export function formatPaceValue(speedMps: Num, units: PaceUnits): string | undefined {
   if (!isNum(speedMps) || speedMps <= 0 || units === 'NONE') return undefined;
   return formatDuration(PACE_DISTANCE[units].meters / speedMps);
+}
+
+/** Distance of one pace unit in meters (e.g. 1000 for /km); undefined for NONE. */
+export function paceUnitMeters(units: PaceUnits): number | undefined {
+  return units === 'NONE' ? undefined : PACE_DISTANCE[units].meters;
 }
 
 export function paceUnitLabel(units: PaceUnits): string {

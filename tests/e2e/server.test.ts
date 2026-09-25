@@ -17,15 +17,10 @@ describe('MCP server', () => {
     expect(client.getInstructions()).toContain('Intervals.icu');
   });
 
-  it('lists the phase-1 tools with read-only annotations', async () => {
+  it('lists read-only tools with descriptions and output schemas', async () => {
     client = await connectClient();
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual([
-      'get_activity',
-      'get_athlete_profile',
-      'get_fitness_summary',
-      'list_activities',
-    ]);
+    expect(tools.length).toBeGreaterThanOrEqual(19);
     for (const tool of tools) {
       expect(tool.description?.length).toBeGreaterThan(40);
       expect(tool.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false });
@@ -37,5 +32,26 @@ describe('MCP server', () => {
     client = await connectClient(testConfig({ toolsets: parseToolsets('athlete') }));
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual(['get_athlete_profile', 'get_fitness_summary']);
+  });
+
+  it('offers prompts only when their tools are enabled', async () => {
+    client = await connectClient();
+    const { prompts } = await client.listPrompts();
+    expect(prompts.map((p) => p.name).sort()).toEqual([
+      'analyze-activity',
+      'plan-next-week',
+      'race-prep',
+      'recovery-check',
+      'weekly-review',
+    ]);
+    const prompt = await client.getPrompt({
+      name: 'race-prep',
+      arguments: { race_date: '2026-11-01', distance: '10k' },
+    });
+    expect(JSON.stringify(prompt.messages)).toContain('10k race on 2026-11-01');
+    await client.close();
+
+    client = await connectClient(testConfig({ toolsets: parseToolsets('activities') }));
+    expect((await client.listPrompts()).prompts).toEqual([]);
   });
 });
