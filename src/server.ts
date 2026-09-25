@@ -11,7 +11,10 @@ import { SERVER_NAME, VERSION } from './version.js';
 const INSTRUCTIONS = `Tools for reading and planning training data in Intervals.icu \
 (activities, fitness/fatigue, wellness, calendar and workout library).
 Dates are YYYY-MM-DD in the athlete's local time zone. Paces and distances are already \
-converted to the athlete's preferred units.`;
+converted to the athlete's preferred units.
+Tools that change data act on the athlete's real account (planned workouts may sync to their \
+watch). Before calling them, show the user what will change and get their agreement; for \
+deletions, get explicit confirmation.`;
 
 export interface CreateServerOptions {
   config: Config;

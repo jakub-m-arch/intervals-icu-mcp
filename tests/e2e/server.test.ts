@@ -17,15 +17,26 @@ describe('MCP server', () => {
     expect(client.getInstructions()).toContain('Intervals.icu');
   });
 
-  it('lists read-only tools with descriptions and output schemas', async () => {
+  it('lists tools with descriptions, annotations and output schemas', async () => {
     client = await connectClient();
     const { tools } = await client.listTools();
-    expect(tools.length).toBeGreaterThanOrEqual(19);
+    expect(tools.length).toBeGreaterThanOrEqual(38);
     for (const tool of tools) {
-      expect(tool.description?.length).toBeGreaterThan(40);
-      expect(tool.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false });
-      expect(tool.outputSchema).toBeDefined();
+      expect(tool.description?.length, tool.name).toBeGreaterThan(40);
+      expect(tool.annotations?.openWorldHint, tool.name).toBe(true);
+      expect(tool.outputSchema, tool.name).toBeDefined();
     }
+  });
+
+  it('exposes the profile and workout syntax resources', async () => {
+    client = await connectClient();
+    const { resources } = await client.listResources();
+    expect(resources.map((r) => r.uri).sort()).toEqual([
+      'intervals://athlete/profile',
+      'intervals://guides/workout-syntax',
+    ]);
+    const guide = await client.readResource({ uri: 'intervals://guides/workout-syntax' });
+    expect(JSON.stringify(guide.contents)).toContain('400mtr');
   });
 
   it('registers only tools from enabled toolsets', async () => {

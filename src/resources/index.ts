@@ -1,4 +1,5 @@
 import type { McpServer } from '@modelcontextprotocol/server';
+import { WORKOUT_SYNTAX_GUIDE } from '../format/workout.js';
 import { getAthleteProfile } from '../tools/athlete.js';
 import type { ToolContext } from '../tools/define-tool.js';
 
@@ -23,6 +24,19 @@ export function registerResources(server: McpServer, context: ToolContext): void
           text: JSON.stringify(await getAthleteProfile.handler({}, context), null, 2),
         },
       ],
+    }),
+  );
+
+  server.registerResource(
+    'workout-syntax',
+    'intervals://guides/workout-syntax',
+    {
+      title: 'Workout text syntax',
+      description: 'How to write structured workouts in Intervals.icu text format.',
+      mimeType: 'text/markdown',
+    },
+    async (uri) => ({
+      contents: [{ uri: uri.href, mimeType: 'text/markdown', text: WORKOUT_SYNTAX_GUIDE }],
     }),
   );
 }

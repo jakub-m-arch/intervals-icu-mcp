@@ -122,3 +122,72 @@ export const getWellness = defineTool({
     };
   },
 });
+
+const rating = (what: string) =>
+  z
+    .number()
+    .int()
+    .min(0)
+    .max(4)
+    .optional()
+    .describe(`${what} on the Intervals.icu 1–4 scale; 0 clears it.`);
+
+export const updateWellness = defineTool({
+  name: 'update_wellness',
+  title: 'Log wellness data',
+  description:
+    'Log or correct wellness data for one day: weight, resting HR, HRV, sleep, subjective ' +
+    'ratings and comments. Only the fields you pass are changed. Measurements (weight, HR, ' +
+    'HRV, sleep) cannot be removed once set, only overwritten; ratings are cleared with 0 and ' +
+    'comments with "".',
+  toolset: 'wellness',
+  access: 'write',
+  idempotent: true,
+  operations: ['updateWellness'],
+  input: z.object({
+    date: isoDate.describe('Day (YYYY-MM-DD).'),
+    weight_kg: z.number().positive().max(400).optional(),
+    resting_hr: z.number().int().min(20).max(150).optional(),
+    hrv_rmssd_ms: z.number().positive().max(500).optional(),
+    sleep_hours: z.number().min(0).max(24).optional(),
+    sleep_score: z.number().min(0).max(100).optional(),
+    sleep_quality: rating('Sleep quality'),
+    soreness: rating('Muscle soreness'),
+    fatigue: rating('Fatigue'),
+    stress: rating('Stress'),
+    mood: rating('Mood'),
+    motivation: rating('Motivation'),
+    injury: rating('Injury'),
+    steps: z.number().int().min(0).optional(),
+    comments: z.string().max(5000).optional(),
+  }),
+  output: z.object({ day: DaySchema }),
+  async handler({ date, ...f }, ctx) {
+    if (Object.values(f).every((v) => v === undefined)) {
+      throw new RangeError('Nothing to update: pass at least one wellness field.');
+    }
+    const updated = unwrap(
+      await ctx.api.PUT('/api/v1/athlete/{id}/wellness/{date}', {
+        params: { path: { id: ctx.athleteId, date } },
+        body: compact({
+          id: date,
+          weight: f.weight_kg,
+          restingHR: f.resting_hr,
+          hrv: f.hrv_rmssd_ms,
+          sleepSecs: f.sleep_hours === undefined ? undefined : Math.round(f.sleep_hours * 3600),
+          sleepScore: f.sleep_score,
+          sleepQuality: f.sleep_quality,
+          soreness: f.soreness,
+          fatigue: f.fatigue,
+          stress: f.stress,
+          mood: f.mood,
+          motivation: f.motivation,
+          injury: f.injury,
+          steps: f.steps,
+          comments: f.comments,
+        }),
+      }),
+    );
+    return { day: describeDay(updated) };
+  },
+});

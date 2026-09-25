@@ -32,7 +32,7 @@ Test fixtures must be anonymised.
 | `src/format/` | Unit, date and response formatting |
 | `openapi/` | Snapshot of the Intervals.icu OpenAPI spec |
 | `tests/unit`, `tests/e2e` | Vitest tests (e2e runs a real MCP client against the server with the API mocked by msw) |
-| `tests/live` | Opt-in, read-only smoke tests against the real API |
+| `tests/live` | Opt-in tests against the real API: read-only by default, write round trips with `LIVE_WRITE=1` (test data only, cleaned up) |
 
 ## Adding a tool
 

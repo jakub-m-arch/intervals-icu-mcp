@@ -6,18 +6,18 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 
 | Status | Operations |
 |---|---|
-| ✅ Covered | 22 |
+| ✅ Covered | 41 |
 | ⛔ Excluded on purpose | 18 |
-| ⏳ Planned | 109 |
+| ⏳ Planned | 90 |
 | **Total** | **149** |
 
 ## Activities
 
 | Operation | Endpoint | Status |
 |---|---|---|
-| `createManualActivity` | `POST /api/v1/athlete/{id}/activities/manual` | ⏳ planned |
+| `createManualActivity` | `POST /api/v1/athlete/{id}/activities/manual` | ✅ `create_manual_activity` |
 | `createMultipleManualActivities` | `POST /api/v1/athlete/{id}/activities/manual/bulk` | ⏳ planned |
-| `deleteActivity` | `DELETE /api/v1/activity/{id}` | ⏳ planned |
+| `deleteActivity` | `DELETE /api/v1/activity/{id}` | ✅ `delete_activity` |
 | `deleteIntervals` | `PUT /api/v1/activity/{id}/delete-intervals` | ⏳ planned |
 | `deleteTombstone` | `DELETE /api/v1/activity/{id}/tombstone` | ⛔ Internal clean-up of deleted activities. |
 | `downloadActivitiesAsCSV` | `GET /api/v1/athlete/{id}/activities.csv` | ⏳ planned |
@@ -27,7 +27,7 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 | `downloadActivityGpxFile` | `GET /api/v1/activity/{id}/gpx-file` | ⛔ Binary file download. |
 | `findBestEfforts` | `GET /api/v1/activity/{id}/best-efforts` | ✅ `get_activity_best_efforts` |
 | `getActivities` | `GET /api/v1/athlete/{athleteId}/activities/{ids}` | ⏳ planned |
-| `getActivity` | `GET /api/v1/activity/{id}` | ✅ `get_activity` |
+| `getActivity` | `GET /api/v1/activity/{id}` | ✅ `get_activity`, `delete_activity` |
 | `getActivityHRCurve` | `GET /api/v1/activity/{id}/hr-curve{ext}` | ⏳ planned |
 | `getActivityMap` | `GET /api/v1/activity/{id}/map` | ⛔ GPS map data; large and privacy-sensitive. |
 | `getActivityPaceCurve` | `GET /api/v1/activity/{id}/pace-curve{ext}` | ⏳ planned |
@@ -61,7 +61,7 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 | `searchForActivitiesFull` | `GET /api/v1/athlete/{id}/activities/search-full` | ⏳ planned |
 | `searchForIntervals` | `GET /api/v1/athlete/{id}/activities/interval-search` | ✅ `search_intervals` |
 | `splitInterval` | `PUT /api/v1/activity/{id}/split-interval` | ⏳ planned |
-| `updateActivity` | `PUT /api/v1/activity/{id}` | ⏳ planned |
+| `updateActivity` | `PUT /api/v1/activity/{id}` | ✅ `update_activity` |
 | `updateActivityStreams` | `PUT /api/v1/activity/{id}/streams` | ⛔ Raw stream editing. |
 | `updateInterval` | `PUT /api/v1/activity/{id}/intervals/{intervalId}` | ⏳ planned |
 | `updateIntervals` | `PUT /api/v1/activity/{id}/intervals` | ⏳ planned |
@@ -117,19 +117,19 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 |---|---|---|
 | `applyPlan` | `POST /api/v1/athlete/{id}/events/apply-plan` | ⏳ planned |
 | `createEvent` | `POST /api/v1/athlete/{id}/events` | ⏳ planned |
-| `createMultipleEvents` | `POST /api/v1/athlete/{id}/events/bulk` | ⏳ planned |
+| `createMultipleEvents` | `POST /api/v1/athlete/{id}/events/bulk` | ✅ `create_events` |
 | `deleteEvent` | `DELETE /api/v1/athlete/{id}/events/{eventId}` | ⏳ planned |
 | `deleteEvents` | `DELETE /api/v1/athlete/{id}/events` | ⏳ planned |
-| `deleteEventsBulk` | `PUT /api/v1/athlete/{id}/events/bulk-delete` | ⏳ planned |
+| `deleteEventsBulk` | `PUT /api/v1/athlete/{id}/events/bulk-delete` | ✅ `delete_events` |
 | `downloadWorkout_1` | `GET /api/v1/athlete/{id}/events/{eventId}/download{ext}` | ⛔ Binary workout file conversion (zwo/mrc/erg/fit). |
 | `downloadWorkouts` | `GET /api/v1/athlete/{id}/workouts.zip` | ⛔ Binary (zip) download. |
-| `duplicateEvents` | `POST /api/v1/athlete/{id}/duplicate-events` | ⏳ planned |
-| `listEvents` | `GET /api/v1/athlete/{id}/events{format}` | ✅ `list_events` |
+| `duplicateEvents` | `POST /api/v1/athlete/{id}/duplicate-events` | ✅ `duplicate_events` |
+| `listEvents` | `GET /api/v1/athlete/{id}/events{format}` | ✅ `list_events`, `create_events` |
 | `listFitnessModelEvents` | `GET /api/v1/athlete/{id}/fitness-model-events` | ⏳ planned |
 | `listTags_1` | `GET /api/v1/athlete/{id}/event-tags` | ⏳ planned |
-| `markEventAsDone` | `POST /api/v1/athlete/{id}/events/{eventId}/mark-done` | ⏳ planned |
-| `showEvent` | `GET /api/v1/athlete/{id}/events/{eventId}` | ✅ `get_event` |
-| `updateEvent` | `PUT /api/v1/athlete/{id}/events/{eventId}` | ⏳ planned |
+| `markEventAsDone` | `POST /api/v1/athlete/{id}/events/{eventId}/mark-done` | ✅ `mark_event_done` |
+| `showEvent` | `GET /api/v1/athlete/{id}/events/{eventId}` | ✅ `get_event`, `update_event`, `mark_event_done`, `delete_events` |
+| `updateEvent` | `PUT /api/v1/athlete/{id}/events/{eventId}` | ✅ `update_event` |
 | `updateEvents` | `PUT /api/v1/athlete/{id}/events` | ⏳ planned |
 
 ## Gear
@@ -137,13 +137,13 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 | Operation | Endpoint | Status |
 |---|---|---|
 | `calcDistanceEtc` | `GET /api/v1/athlete/{id}/gear/{gearId}/calc` | ⏳ planned |
-| `createGear` | `POST /api/v1/athlete/{id}/gear` | ⏳ planned |
-| `createReminder` | `POST /api/v1/athlete/{id}/gear/{gearId}/reminder` | ⏳ planned |
-| `deleteGear` | `DELETE /api/v1/athlete/{id}/gear/{gearId}` | ⏳ planned |
+| `createGear` | `POST /api/v1/athlete/{id}/gear` | ✅ `create_gear` |
+| `createReminder` | `POST /api/v1/athlete/{id}/gear/{gearId}/reminder` | ✅ `add_gear_reminder` |
+| `deleteGear` | `DELETE /api/v1/athlete/{id}/gear/{gearId}` | ✅ `delete_gear` |
 | `deleteReminder` | `DELETE /api/v1/athlete/{id}/gear/{gearId}/reminder/{reminderId}` | ⏳ planned |
-| `listGear` | `GET /api/v1/athlete/{id}/gear{ext}` | ✅ `list_gear` |
+| `listGear` | `GET /api/v1/athlete/{id}/gear{ext}` | ✅ `list_gear`, `delete_gear` |
 | `replaceGear` | `POST /api/v1/athlete/{id}/gear/{gearId}/replace` | ⏳ planned |
-| `updateGear` | `PUT /api/v1/athlete/{id}/gear/{gearId}` | ⏳ planned |
+| `updateGear` | `PUT /api/v1/athlete/{id}/gear/{gearId}` | ✅ `update_gear` |
 | `updateReminder` | `PUT /api/v1/athlete/{id}/gear/{gearId}/reminder/{reminderId}` | ⏳ planned |
 
 ## Library
@@ -151,24 +151,24 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 | Operation | Endpoint | Status |
 |---|---|---|
 | `applyCurrentPlanChanges` | `PUT /api/v1/athlete/{id}/apply-plan-changes` | ⏳ planned |
-| `createFolder` | `POST /api/v1/athlete/{id}/folders` | ⏳ planned |
-| `createMultipleWorkouts` | `POST /api/v1/athlete/{id}/workouts/bulk` | ⏳ planned |
+| `createFolder` | `POST /api/v1/athlete/{id}/folders` | ✅ `create_folder` |
+| `createMultipleWorkouts` | `POST /api/v1/athlete/{id}/workouts/bulk` | ✅ `create_workouts` |
 | `createWorkout` | `POST /api/v1/athlete/{id}/workouts` | ⏳ planned |
-| `deleteFolder` | `DELETE /api/v1/athlete/{id}/folders/{folderId}` | ⏳ planned |
-| `deleteWorkout` | `DELETE /api/v1/athlete/{id}/workouts/{workoutId}` | ⏳ planned |
+| `deleteFolder` | `DELETE /api/v1/athlete/{id}/folders/{folderId}` | ✅ `delete_folder` |
+| `deleteWorkout` | `DELETE /api/v1/athlete/{id}/workouts/{workoutId}` | ✅ `delete_workout` |
 | `downloadWorkout` | `POST /api/v1/download-workout{ext}` | ⛔ Binary workout file conversion (zwo/mrc/erg/fit). |
 | `downloadWorkoutForAthlete` | `POST /api/v1/athlete/{id}/download-workout{ext}` | ⛔ Binary workout file conversion (zwo/mrc/erg/fit). |
 | `duplicateWorkouts` | `POST /api/v1/athlete/{id}/duplicate-workouts` | ⏳ planned |
 | `importWorkoutFile` | `POST /api/v1/athlete/{id}/folders/{folderId}/import-workout` | ⛔ Binary workout file import. |
-| `listFolders` | `GET /api/v1/athlete/{id}/folders` | ✅ `list_workout_library` |
+| `listFolders` | `GET /api/v1/athlete/{id}/folders` | ✅ `list_workout_library`, `delete_folder` |
 | `listFolderSharedWith` | `GET /api/v1/athlete/{id}/folders/{folderId}/shared-with` | ⏳ planned |
 | `listTags` | `GET /api/v1/athlete/{id}/workout-tags` | ⏳ planned |
 | `listWorkouts` | `GET /api/v1/athlete/{id}/workouts` | ⏳ planned |
-| `showWorkout` | `GET /api/v1/athlete/{id}/workouts/{workoutId}` | ✅ `get_workout` |
-| `updateFolder` | `PUT /api/v1/athlete/{id}/folders/{folderId}` | ⏳ planned |
+| `showWorkout` | `GET /api/v1/athlete/{id}/workouts/{workoutId}` | ✅ `get_workout`, `delete_workout` |
+| `updateFolder` | `PUT /api/v1/athlete/{id}/folders/{folderId}` | ✅ `update_folder` |
 | `updateFolderSharedWith` | `PUT /api/v1/athlete/{id}/folders/{folderId}/shared-with` | ⏳ planned |
 | `updatePlanWorkouts` | `PUT /api/v1/athlete/{id}/folders/{folderId}/workouts` | ⏳ planned |
-| `updateWorkout` | `PUT /api/v1/athlete/{id}/workouts/{workoutId}` | ⏳ planned |
+| `updateWorkout` | `PUT /api/v1/athlete/{id}/workouts/{workoutId}` | ✅ `update_workout` |
 
 ## o-auth-server-controller
 
@@ -220,7 +220,7 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 |---|---|---|
 | `getRecord` | `GET /api/v1/athlete/{id}/wellness/{date}` | ⏳ planned |
 | `listWellnessRecords` | `GET /api/v1/athlete/{id}/wellness{ext}` | ✅ `get_fitness_summary`, `get_wellness` |
-| `updateWellness` | `PUT /api/v1/athlete/{id}/wellness/{date}` | ⏳ planned |
+| `updateWellness` | `PUT /api/v1/athlete/{id}/wellness/{date}` | ✅ `update_wellness` |
 | `updateWellness_1` | `PUT /api/v1/athlete/{id}/wellness` | ⏳ planned |
 | `updateWellnessBulk` | `PUT /api/v1/athlete/{id}/wellness-bulk` | ⏳ planned |
 | `uploadWellness` | `POST /api/v1/athlete/{id}/wellness` | ⏳ planned |

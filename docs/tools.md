@@ -83,6 +83,58 @@ List comments and notes (e.g. from a coach or the athlete) on one activity.
 
 API: `listActivityMessages`
 
+### `update_activity`
+
+**Update an activity** · write (`safe` mode) · idempotent
+
+Edit a completed activity: name, description/notes, sport type, perceived exertion (RPE), feel, tags, or race/commute flags. Only the fields you pass are changed.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes | Activity id, e.g. "i123456789" (from list_activities or search_activities). |
+| `name` | string |  |  |
+| `description` | string |  |  |
+| `type` | string |  | Sport type, e.g. "Run", "TrailRun", "Walk". |
+| `rpe` | integer |  | Perceived exertion 1–10. |
+| `feel` | integer |  | How the athlete felt: 1 strong … 5 weak. |
+| `tags` | string[] |  | Replaces all tags. |
+| `race` | boolean |  |  |
+| `commute` | boolean |  |  |
+
+API: `updateActivity`
+
+### `create_manual_activity`
+
+**Log a manual activity** · write (`safe` mode)
+
+Log an activity that was not recorded by a device (e.g. a treadmill run without a watch). Today or past dates only. It counts towards training load; confirm details with the user first.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `date` | string | yes |  |
+| `time` | string |  | Start time "HH:MM" (default 12:00). |
+| `type` | string | yes | Sport, e.g. "Run", "Walk", "WeightTraining". |
+| `name` | string | yes |  |
+| `duration` | number \| string | yes | Moving time ("45:00" or seconds). |
+| `distance_km` | number |  |  |
+| `description` | string |  |  |
+| `rpe` | integer |  | Perceived exertion 1–10. |
+| `feel` | integer |  | How the athlete felt: 1 strong … 5 weak. |
+
+API: `createManualActivity`
+
+### `delete_activity`
+
+**Delete an activity** · destructive (`full` mode)
+
+Permanently delete a completed activity and its data. Cannot be undone (the original file is not re-imported automatically): get explicit confirmation from the user first.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes | Activity id, e.g. "i123456789" (from list_activities or search_activities). |
+
+API: `deleteActivity`, `getActivity`
+
 ## `analysis`
 
 ### `get_activity_streams`
@@ -196,6 +248,32 @@ Get daily wellness data: resting HR, HRV, sleep (duration, score), weight, steps
 
 API: `listWellnessRecords`
 
+### `update_wellness`
+
+**Log wellness data** · write (`safe` mode) · idempotent
+
+Log or correct wellness data for one day: weight, resting HR, HRV, sleep, subjective ratings and comments. Only the fields you pass are changed. Measurements (weight, HR, HRV, sleep) cannot be removed once set, only overwritten; ratings are cleared with 0 and comments with "".
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `date` | string | yes | Day (YYYY-MM-DD). |
+| `weight_kg` | number |  |  |
+| `resting_hr` | integer |  |  |
+| `hrv_rmssd_ms` | number |  |  |
+| `sleep_hours` | number |  |  |
+| `sleep_score` | number |  |  |
+| `sleep_quality` | integer |  | Sleep quality on the Intervals.icu 1–4 scale; 0 clears it. |
+| `soreness` | integer |  | Muscle soreness on the Intervals.icu 1–4 scale; 0 clears it. |
+| `fatigue` | integer |  | Fatigue on the Intervals.icu 1–4 scale; 0 clears it. |
+| `stress` | integer |  | Stress on the Intervals.icu 1–4 scale; 0 clears it. |
+| `mood` | integer |  | Mood on the Intervals.icu 1–4 scale; 0 clears it. |
+| `motivation` | integer |  | Motivation on the Intervals.icu 1–4 scale; 0 clears it. |
+| `injury` | integer |  | Injury on the Intervals.icu 1–4 scale; 0 clears it. |
+| `steps` | integer |  |  |
+| `comments` | string |  |  |
+
+API: `updateWellness`
+
 ## `calendar`
 
 ### `list_events`
@@ -224,6 +302,83 @@ Get one calendar event (planned workout, race or note) by id, including the full
 | `id` | integer | yes | Event id (from list_events). |
 
 API: `showEvent`
+
+### `create_events`
+
+**Add events to the calendar** · write (`safe` mode)
+
+Add planned workouts, races, notes or holidays/sickness to the athlete calendar (up to 50 per call). Planned workouts sync to the athlete's watch when their device integration is enabled. Show the plan to the user and get agreement before calling. An entry with the same date, category and name as an existing one is skipped unless allow_duplicates is true. Check workout_check in the result and fix any warnings with update_event.
+
+Workout text syntax (Intervals.icu): one step per line starting with "- ", e.g. "- 10m Z2 Pace", "- 1.5km 7:00/km Pace", "- 90s 85% Pace", "- 10m Ramp 60-80% HR", "- 5m Z2 HR". Durations: 30s, 90s, 1m30, 10m, 1h. Distances: 400mtr (meters!), 1.5km, 2mi — "400m" means 400 MINUTES. Repeats: a line ending in "Nx" (e.g. "Main set 4x") followed by its steps, then a blank line. Section lines like "Warmup"/"Cooldown" are labels. Text before the duration labels a step ("- Strides 20s Z5 Pace"). Power (rides): "75%" (of FTP), "200w", "150-180w", "Z2". Bpm ranges like "140-150bpm" are NOT supported; use HR zones or % HR.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `events` | object[] | yes |  |
+| `allow_duplicates` | boolean |  | Create even if an identical entry exists. |
+
+API: `createMultipleEvents`, `listEvents`
+
+### `update_event`
+
+**Update a calendar event** · write (`safe` mode) · idempotent
+
+Change a calendar event: move it to another date, rename it, or rewrite the workout steps. Only the fields you pass are changed. Confirm the change with the user first.
+
+Workout text syntax (Intervals.icu): one step per line starting with "- ", e.g. "- 10m Z2 Pace", "- 1.5km 7:00/km Pace", "- 90s 85% Pace", "- 10m Ramp 60-80% HR", "- 5m Z2 HR". Durations: 30s, 90s, 1m30, 10m, 1h. Distances: 400mtr (meters!), 1.5km, 2mi — "400m" means 400 MINUTES. Repeats: a line ending in "Nx" (e.g. "Main set 4x") followed by its steps, then a blank line. Section lines like "Warmup"/"Cooldown" are labels. Text before the duration labels a step ("- Strides 20s Z5 Pace"). Power (rides): "75%" (of FTP), "200w", "150-180w", "Z2". Bpm ranges like "140-150bpm" are NOT supported; use HR zones or % HR.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | yes | Event id (from list_events). |
+| `date` | string |  | Move to this date. |
+| `category` | `WORKOUT` \| `RACE_A` \| `RACE_B` \| `RACE_C` \| `NOTE` \| `HOLIDAY` \| `SICK` \| `INJURED` |  |  |
+| `time` | string |  | Start time "HH:MM" (optional). |
+| `type` | string |  | Sport, e.g. "Run", "Ride", "Walk". Required for workouts and races. |
+| `name` | string |  |  |
+| `description` | string |  | For workouts: the steps in workout text syntax. Otherwise free-text notes. |
+| `end_date` | string |  | Last day for multi-day entries (holiday, sick, …). |
+| `duration` | number \| string |  | Planned duration ("45:00" or seconds) when there are no workout steps. |
+| `distance_km` | number |  | Planned distance in km. |
+| `indoor` | boolean |  |  |
+
+API: `updateEvent`, `showEvent`
+
+### `mark_event_done`
+
+**Mark a planned workout as done** · write (`safe` mode)
+
+Mark a planned workout as completed without a recorded file: creates a manual activity matching the plan (for sessions done without a watch). Only for today or past dates.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | yes | Planned workout event id. |
+
+API: `markEventAsDone`, `showEvent`
+
+### `duplicate_events`
+
+**Repeat events in later weeks** · write (`safe` mode)
+
+Copy calendar events to later weeks, e.g. repeat this week's workouts for the next 3 weeks. Confirm with the user first.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `ids` | integer[] | yes | Event ids to copy. |
+| `copies` | integer | yes | How many copies of each event. |
+| `weeks_between` | integer |  | Default 1 (weekly). |
+
+API: `duplicateEvents`
+
+### `delete_events`
+
+**Delete calendar events** · destructive (`full` mode)
+
+Permanently delete calendar events (planned workouts, notes, races) by id. This cannot be undone: list what will be deleted and get explicit confirmation from the user first.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `ids` | integer[] | yes | Event ids. |
+
+API: `deleteEventsBulk`, `showEvent`
 
 ## `library`
 
@@ -259,6 +414,94 @@ Get the training plan the athlete is currently following (if any): plan name, st
 
 API: `getAthleteTrainingPlan`
 
+### `create_folder`
+
+**Create a library folder or plan** · write (`safe` mode)
+
+Create a folder (or a training plan) in the workout library to hold reusable workouts.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | yes |  |
+| `kind` | `FOLDER` \| `PLAN` |  | Default FOLDER. |
+| `description` | string |  |  |
+
+API: `createFolder`
+
+### `update_folder`
+
+**Rename a library folder** · write (`safe` mode) · idempotent
+
+Rename a workout library folder or plan, or change its description.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | yes |  |
+| `name` | string |  |  |
+| `description` | string |  |  |
+
+API: `updateFolder`
+
+### `create_workouts`
+
+**Add workouts to the library** · write (`safe` mode)
+
+Save reusable workouts in a library folder or plan (up to 50 per call). Check workout_check in the result and fix warnings with update_workout.
+
+Workout text syntax (Intervals.icu): one step per line starting with "- ", e.g. "- 10m Z2 Pace", "- 1.5km 7:00/km Pace", "- 90s 85% Pace", "- 10m Ramp 60-80% HR", "- 5m Z2 HR". Durations: 30s, 90s, 1m30, 10m, 1h. Distances: 400mtr (meters!), 1.5km, 2mi — "400m" means 400 MINUTES. Repeats: a line ending in "Nx" (e.g. "Main set 4x") followed by its steps, then a blank line. Section lines like "Warmup"/"Cooldown" are labels. Text before the duration labels a step ("- Strides 20s Z5 Pace"). Power (rides): "75%" (of FTP), "200w", "150-180w", "Z2". Bpm ranges like "140-150bpm" are NOT supported; use HR zones or % HR.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `folder_id` | integer | yes | Target folder or plan (from list_workout_library). |
+| `workouts` | object[] | yes |  |
+
+API: `createMultipleWorkouts`
+
+### `update_workout`
+
+**Update a library workout** · write (`safe` mode) · idempotent
+
+Change a library workout (name, steps, sport, folder). Only the fields you pass are changed.
+
+Workout text syntax (Intervals.icu): one step per line starting with "- ", e.g. "- 10m Z2 Pace", "- 1.5km 7:00/km Pace", "- 90s 85% Pace", "- 10m Ramp 60-80% HR", "- 5m Z2 HR". Durations: 30s, 90s, 1m30, 10m, 1h. Distances: 400mtr (meters!), 1.5km, 2mi — "400m" means 400 MINUTES. Repeats: a line ending in "Nx" (e.g. "Main set 4x") followed by its steps, then a blank line. Section lines like "Warmup"/"Cooldown" are labels. Text before the duration labels a step ("- Strides 20s Z5 Pace"). Power (rides): "75%" (of FTP), "200w", "150-180w", "Z2". Bpm ranges like "140-150bpm" are NOT supported; use HR zones or % HR.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | yes |  |
+| `folder_id` | integer |  | Move to this folder or plan. |
+| `name` | string |  |  |
+| `type` | string |  | Sport, e.g. "Run" or "Ride". |
+| `description` | string |  | The workout steps in workout text syntax. |
+| `day` | integer |  | Training plans only: day number in the plan (0 = first day). |
+| `indoor` | boolean |  |  |
+| `tags` | string[] |  |  |
+
+API: `updateWorkout`
+
+### `delete_workout`
+
+**Delete a library workout** · destructive (`full` mode)
+
+Permanently delete one workout from the library. Cannot be undone: confirm with the user first. Calendar events created from it are not affected.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | yes |  |
+
+API: `deleteWorkout`, `showWorkout`
+
+### `delete_folder`
+
+**Delete a library folder** · destructive (`full` mode)
+
+Permanently delete a library folder or plan INCLUDING ALL ITS WORKOUTS. Cannot be undone: tell the user how many workouts will be lost and get explicit confirmation.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | integer | yes |  |
+
+API: `deleteFolder`, `listFolders`
+
 ## `gear`
 
 ### `list_gear`
@@ -273,3 +516,63 @@ List gear such as running shoes and bikes with accumulated distance, time and nu
 | `type` | string |  | Only this gear type, e.g. "Shoes" or "Bike". |
 
 API: `listGear`
+
+### `create_gear`
+
+**Add gear** · write (`safe` mode)
+
+Add gear such as a new pair of running shoes, optionally with distance already covered. Activities are linked to gear by the device sync or manually in Intervals.icu.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `type` | `Shoes` \| `Bike` \| `Wetsuit` \| `RowingMachine` \| `Skis` \| `Snowboard` \| `Boat` \| `Board` \| `Equipment` \| `Accessories` \| `Apparel` \| `Computer` | yes |  |
+| `name` | string | yes |  |
+| `starting_distance_km` | number |  | Distance already covered. |
+| `purchased` | string |  |  |
+| `notes` | string |  |  |
+
+API: `createGear`
+
+### `update_gear`
+
+**Update or retire gear** · write (`safe` mode) · idempotent
+
+Rename gear, change its notes, or retire it (e.g. worn-out shoes). Only the fields you pass are changed.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes | Gear id (from list_gear). |
+| `name` | string |  |  |
+| `notes` | string |  |  |
+| `retired` | string |  | Retire the gear as of this date. |
+
+API: `updateGear`
+
+### `add_gear_reminder`
+
+**Add a gear reminder** · write (`safe` mode)
+
+Add a replacement or maintenance reminder to gear, e.g. "replace shoes after 600 km". Set at least one limit.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `gear_id` | string | yes |  |
+| `name` | string | yes | e.g. "Replace" or "Chain wax". |
+| `distance_km` | number |  |  |
+| `hours` | number |  |  |
+| `activities` | integer |  |  |
+| `days` | integer |  |  |
+
+API: `createReminder`
+
+### `delete_gear`
+
+**Delete gear** · destructive (`full` mode)
+
+Permanently delete gear and its reminders. To stop using gear but keep its history, retire it with update_gear instead. Get explicit confirmation first.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes |  |
+
+API: `deleteGear`, `listGear`

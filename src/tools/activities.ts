@@ -14,7 +14,7 @@ import { compact } from '../format/compact.js';
 import { resolveRange, todayIn } from '../format/dates.js';
 import { formatDistance, formatDuration, round } from '../format/units.js';
 import { defineTool } from './define-tool.js';
-import { activityId, isoDate } from './schemas.js';
+import { activityId, elapsedTime, isoDate } from './schemas.js';
 
 const DEFAULT_LIST_DAYS = 30;
 const DEFAULT_LIMIT = 50;
@@ -257,5 +257,141 @@ export const listActivityComments = defineTool({
           }),
         ),
     };
+  },
+});
+
+// ---------------------------------------------------------------------------------------
+// Write tools
+// ---------------------------------------------------------------------------------------
+
+const rpe = z.number().int().min(1).max(10).optional().describe('Perceived exertion 1–10.');
+const feel = z
+  .number()
+  .int()
+  .min(1)
+  .max(5)
+  .optional()
+  .describe('How the athlete felt: 1 strong … 5 weak.');
+
+export const updateActivity = defineTool({
+  name: 'update_activity',
+  title: 'Update an activity',
+  description:
+    'Edit a completed activity: name, description/notes, sport type, perceived exertion ' +
+    '(RPE), feel, tags, or race/commute flags. Only the fields you pass are changed.',
+  toolset: 'activities',
+  access: 'write',
+  idempotent: true,
+  operations: ['updateActivity'],
+  input: z.object({
+    id: activityId,
+    name: z.string().min(1).max(200).optional(),
+    description: z.string().max(10_000).optional(),
+    type: z.string().optional().describe('Sport type, e.g. "Run", "TrailRun", "Walk".'),
+    rpe,
+    feel,
+    tags: z.array(z.string()).optional().describe('Replaces all tags.'),
+    race: z.boolean().optional(),
+    commute: z.boolean().optional(),
+  }),
+  output: z.object({ activity: ActivitySummarySchema }),
+  async handler({ id, ...f }, ctx) {
+    if (Object.values(f).every((v) => v === undefined)) {
+      throw new RangeError('Nothing to update: pass at least one field to change.');
+    }
+    const [athlete, updated] = await Promise.all([
+      ctx.athlete(),
+      ctx.api
+        .PUT('/api/v1/activity/{id}', {
+          params: { path: { id } },
+          body: compact({
+            name: f.name,
+            description: f.description,
+            type: f.type,
+            icu_rpe: f.rpe,
+            feel: f.feel,
+            tags: f.tags,
+            race: f.race,
+            commute: f.commute,
+          }) as Activity,
+        })
+        .then(unwrap),
+    ]);
+    return { activity: summarizeActivity(updated, athlete) };
+  },
+});
+
+export const createManualActivity = defineTool({
+  name: 'create_manual_activity',
+  title: 'Log a manual activity',
+  description:
+    'Log an activity that was not recorded by a device (e.g. a treadmill run without a ' +
+    'watch). Today or past dates only. It counts towards training load; confirm details ' +
+    'with the user first.',
+  toolset: 'activities',
+  access: 'write',
+  operations: ['createManualActivity'],
+  input: z.object({
+    date: isoDate,
+    time: z
+      .string()
+      .regex(/^([01]?\d|2[0-3]):[0-5]\d$/)
+      .optional()
+      .describe('Start time "HH:MM" (default 12:00).'),
+    type: z.string().describe('Sport, e.g. "Run", "Walk", "WeightTraining".'),
+    name: z.string().min(1).max(200),
+    duration: elapsedTime.describe('Moving time ("45:00" or seconds).'),
+    distance_km: z.number().positive().optional(),
+    description: z.string().max(10_000).optional(),
+    rpe,
+    feel,
+  }),
+  output: z.object({ activity: ActivitySummarySchema }),
+  async handler(args, ctx) {
+    const athlete = await ctx.athlete();
+    if (args.date > todayIn(athlete.timezone)) {
+      throw new RangeError(
+        'Activities cannot be in the future. Use create_events to plan a workout.',
+      );
+    }
+    if (args.duration <= 0) throw new RangeError('"duration" must be greater than zero.');
+    const created = unwrap(
+      await ctx.api.POST('/api/v1/athlete/{id}/activities/manual', {
+        params: { path: { id: ctx.athleteId } },
+        body: compact({
+          start_date_local: `${args.date}T${(args.time ?? '12:00').padStart(5, '0')}:00`,
+          type: args.type,
+          name: args.name,
+          moving_time: args.duration,
+          elapsed_time: args.duration,
+          distance: args.distance_km === undefined ? undefined : args.distance_km * 1000,
+          description: args.description,
+          icu_rpe: args.rpe,
+          feel: args.feel,
+        }) as Activity,
+      }),
+    );
+    return { activity: summarizeActivity(created, athlete) };
+  },
+});
+
+export const deleteActivity = defineTool({
+  name: 'delete_activity',
+  title: 'Delete an activity',
+  description:
+    'Permanently delete a completed activity and its data. Cannot be undone (the original ' +
+    'file is not re-imported automatically): get explicit confirmation from the user first.',
+  toolset: 'activities',
+  access: 'destructive',
+  operations: ['deleteActivity', 'getActivity'],
+  input: z.object({ id: activityId }),
+  output: z.object({ deleted: ActivitySummarySchema }),
+  async handler(args, ctx) {
+    const [athlete, activity] = await Promise.all([
+      ctx.athlete(),
+      ctx.api.GET('/api/v1/activity/{id}', { params: { path: { id: args.id } } }).then(unwrap),
+    ]);
+    unwrap(await ctx.api.DELETE('/api/v1/activity/{id}', { params: { path: { id: args.id } } }));
+    return { deleted: summarizeActivity(activity, athlete) };
   },
 });

@@ -1,8 +1,11 @@
 import {
+  createManualActivity,
+  deleteActivity,
   getActivity,
   listActivities,
   listActivityComments,
   searchActivities,
+  updateActivity,
 } from './activities.js';
 import {
   getActivityBestEfforts,
@@ -12,12 +15,30 @@ import {
   searchIntervals,
 } from './analysis.js';
 import { getAthleteProfile, getFitnessSummary } from './athlete.js';
-import { getEvent, listEvents } from './calendar.js';
+import {
+  createEvents,
+  deleteEvents,
+  duplicateEvents,
+  getEvent,
+  listEvents,
+  markEventDone,
+  updateEvent,
+} from './calendar.js';
 import { getAthleteCurves } from './curves.js';
-import { listGear } from './gear.js';
-import { getTrainingPlan, getWorkout, listWorkoutLibrary } from './library.js';
+import { addGearReminder, createGear, deleteGear, listGear, updateGear } from './gear.js';
+import {
+  createFolder,
+  createWorkouts,
+  deleteFolder,
+  deleteWorkout,
+  getTrainingPlan,
+  getWorkout,
+  listWorkoutLibrary,
+  updateFolder,
+  updateWorkout,
+} from './library.js';
 import type { AnyTool } from './registry.js';
-import { getWellness } from './wellness.js';
+import { getWellness, updateWellness } from './wellness.js';
 
 /** Every tool the server knows about. Configuration decides which ones are registered. */
 export const ALL_TOOLS: readonly AnyTool[] = [
@@ -29,6 +50,9 @@ export const ALL_TOOLS: readonly AnyTool[] = [
   searchActivities,
   getActivity,
   listActivityComments,
+  updateActivity,
+  createManualActivity,
+  deleteActivity,
   // analysis
   getActivityStreams,
   getActivityHistogram,
@@ -39,13 +63,29 @@ export const ALL_TOOLS: readonly AnyTool[] = [
   getAthleteCurves,
   // wellness
   getWellness,
+  updateWellness,
   // calendar
   listEvents,
   getEvent,
+  createEvents,
+  updateEvent,
+  markEventDone,
+  duplicateEvents,
+  deleteEvents,
   // library
   listWorkoutLibrary,
   getWorkout,
   getTrainingPlan,
+  createFolder,
+  updateFolder,
+  createWorkouts,
+  updateWorkout,
+  deleteWorkout,
+  deleteFolder,
   // gear
   listGear,
+  createGear,
+  updateGear,
+  addGearReminder,
+  deleteGear,
 ];

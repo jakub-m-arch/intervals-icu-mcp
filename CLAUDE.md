@@ -53,6 +53,19 @@ are in English and should be ready for contributors.
 
   Patches to the spec itself belong in `scripts/update-openapi.ts`; other mismatches are
   typed locally with a comment.
+- Write behaviour verified live (see `tests/live/write.test.ts`, run with `LIVE_WRITE=1`):
+  - `PUT` merges the given fields. `null` is ignored, so fields cannot be cleared with it.
+    Wellness ratings clear with 0 and comments with `""`; measurements cannot be cleared.
+  - Client-provided event `uid`s are ignored, so `upsertOnUid` cannot deduplicate.
+    `create_events` checks for duplicates itself.
+  - Manual activities and `mark-done` fail with 422 for future dates.
+  - Workout text is parsed server-side into `workout_doc`. Unparseable text is still
+    accepted, with 0 steps.
+  - `400m` means minutes (meters are `400mtr`), bpm ranges are not parsed, and inline
+    `3x5m` repeats are not supported.
+- Live write tests only create objects named `[mcp-test] …` on far-future dates, or on
+  2020-01-01 for activities, and sweep them afterwards. Never write to real dates of the
+  user's account in tests.
 
 ## Conventions
 

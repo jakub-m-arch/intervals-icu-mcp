@@ -131,7 +131,7 @@ Days available: ${days_available ?? 'ask me if unclear'}.
 3. Use list_events to avoid clashing with anything already planned.
 4. Propose each session with purpose, duration and intensity (zones or pace), mostly easy with at most 1–2 harder sessions.
 
-Present the plan as a short table. If calendar write tools are available, ask before adding anything to my calendar.`,
+Present the plan as a short table. If create_events is available, offer to add the workouts to my calendar (in Intervals.icu workout text format so they sync to my watch), and only add them after I agree.`,
         ),
     );
 

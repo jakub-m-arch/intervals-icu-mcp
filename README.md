@@ -31,26 +31,36 @@ assistants read your training data and help you plan training.
 
 ## Tools
 
-19 read-only tools in the default toolsets. The full reference, generated from the code, is
-in [docs/tools.md](docs/tools.md), and API coverage is tracked in [docs/coverage.md](docs/coverage.md).
+38 tools. The full reference, generated from the code, is in [docs/tools.md](docs/tools.md), and
+API coverage is tracked in [docs/coverage.md](docs/coverage.md).
 
-| Toolset | Tools |
-|---|---|
-| `athlete` | `get_athlete_profile` (zones and thresholds), `get_fitness_summary` (fitness/fatigue/form) |
-| `activities` | `list_activities`, `search_activities`, `get_activity`, `list_activity_comments` |
-| `analysis` | `get_activity_streams`, `get_activity_histogram`, `get_activity_best_efforts`, `get_activity_segment_stats`, `search_intervals` |
-| `curves` | `get_athlete_curves` (personal bests, critical speed) |
-| `wellness` | `get_wellness` (HRV, resting HR, sleep, subjective ratings) |
-| `calendar` | `list_events`, `get_event` |
-| `library` | `list_workout_library`, `get_workout`, `get_training_plan` |
-| `gear` | `list_gear` (e.g. shoe mileage) |
+| Toolset | Read | Write (`safe`, default) | Delete (`full` only) |
+|---|---|---|---|
+| `athlete` | `get_athlete_profile`, `get_fitness_summary` | | |
+| `activities` | `list_activities`, `search_activities`, `get_activity`, `list_activity_comments` | `update_activity`, `create_manual_activity` | `delete_activity` |
+| `analysis` | `get_activity_streams`, `get_activity_histogram`, `get_activity_best_efforts`, `get_activity_segment_stats`, `search_intervals` | | |
+| `curves` | `get_athlete_curves` | | |
+| `wellness` | `get_wellness` | `update_wellness` | |
+| `calendar` | `list_events`, `get_event` | `create_events`, `update_event`, `mark_event_done`, `duplicate_events` | `delete_events` |
+| `library` | `list_workout_library`, `get_workout`, `get_training_plan` | `create_folder`, `update_folder`, `create_workouts`, `update_workout` | `delete_workout`, `delete_folder` |
+| `gear` | `list_gear` | `create_gear`, `update_gear`, `add_gear_reminder` | `delete_gear` |
 
 **Prompts** (slash commands in most clients): `weekly-review`, `analyze-activity`,
 `recovery-check`, `plan-next-week`, `race-prep`.
 
-**Resources:** `intervals://athlete/profile`.
+**Resources:** `intervals://athlete/profile`, `intervals://guides/workout-syntax`.
 
-Write tools (planning workouts, logging wellness) are coming in 0.3.
+### Safety
+
+- **Tools outside the write mode are not registered at all.** In the default `safe` mode, the
+  assistant can create and edit, but cannot delete. Set `INTERVALS_ICU_WRITE_MODE=read-only`
+  to only read, or `full` to also allow deletions.
+- **Tools are annotated** as read-only, write or destructive, so MCP clients can ask before
+  running them.
+- **Planned workouts are checked after saving.** The server reports how Intervals.icu parsed the
+  workout text and warns about common mistakes, e.g. `400m` means 400 *minutes*.
+- **`create_events` skips duplicates:** entries with the same date, category and name.
+- **Delete tools resolve every id first.** If any id is unknown, nothing is deleted.
 
 ## Configuration
 
