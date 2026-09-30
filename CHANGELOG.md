@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/jakub-m-arch/intervals-icu-mcp/compare/intervals-icu-mcp-v0.1.0...intervals-icu-mcp-v0.1.1) (2026-09-30)
+
+
+### Bug Fixes
+
+* normalize bin path, derive Docker tags from the release version, drop release-as ([c7fa7f5](https://github.com/jakub-m-arch/intervals-icu-mcp/commit/c7fa7f59fca88fd8de899529a6b097c348193f89))
+* release pipeline issues found while publishing 0.1.0 ([e117487](https://github.com/jakub-m-arch/intervals-icu-mcp/commit/e1174872178acc8863a4fc06902af679ab1a8a2d))
+
 ## 0.1.0 (2026-09-30)
 
 
