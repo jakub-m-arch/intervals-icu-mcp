@@ -8,8 +8,102 @@ A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server for
 assistants read your training data and help you plan training.
 
 > [!WARNING]
-> **Early development.** The first read-only tools work, but the package is not
-> published to npm yet. See the [roadmap](#roadmap) below.
+> **Pre-1.0.** Tools and output formats may still change between minor versions.
+> See the [roadmap](#roadmap) below.
+
+## Quick start
+
+You need an Intervals.icu API key: Settings → Developer Settings → *Generate API key*.
+
+| Client | Install |
+|---|---|
+| [Claude Desktop](#claude-desktop) | One-click `.mcpb` bundle from the [latest release](https://github.com/jakub-m-arch/intervals-icu-mcp/releases/latest) |
+| [Claude Code](#claude-code) | `claude mcp add` |
+| [Cursor](#cursor), [VS Code](#vs-code) | JSON config with `npx` |
+| Any MCP client | `npx -y @jakub-m-arch/intervals-icu-mcp` (stdio), or the [Docker image](#docker) |
+
+Every client needs Node.js ≥ 22.12 for the `npx` route, except the `.mcpb` bundle (Claude Desktop
+ships its own Node) and Docker.
+
+### Claude Desktop
+
+Download `intervals-icu-mcp.mcpb` from the latest release and open it (or drag it into
+Settings → Extensions). Claude Desktop asks for your API key and stores it securely; write mode
+and toolsets are optional fields with safe defaults.
+
+Prefer a manual config? Open Settings → Developer → Edit Config and add:
+
+```json
+{
+  "mcpServers": {
+    "intervals-icu": {
+      "command": "/absolute/path/to/npx",
+      "args": ["-y", "@jakub-m-arch/intervals-icu-mcp"],
+      "env": { "INTERVALS_ICU_API_KEY": "your-key" }
+    }
+  }
+}
+```
+
+Use the absolute path to `npx` (see `which npx`). Claude Desktop does not inherit your shell's
+`PATH`, so a plain `"npx"` often fails, especially with nvm. Quit the app (Cmd+Q) and start it
+again to load the server.
+
+### Claude Code
+
+```bash
+claude mcp add intervals-icu -e INTERVALS_ICU_API_KEY=your-key -- npx -y @jakub-m-arch/intervals-icu-mcp
+```
+
+### Cursor
+
+Add to `~/.cursor/mcp.json` (or `.cursor/mcp.json` in a project):
+
+```json
+{
+  "mcpServers": {
+    "intervals-icu": {
+      "command": "npx",
+      "args": ["-y", "@jakub-m-arch/intervals-icu-mcp"],
+      "env": { "INTERVALS_ICU_API_KEY": "your-key" }
+    }
+  }
+}
+```
+
+### VS Code
+
+Add to `.vscode/mcp.json` (or run **MCP: Open User Configuration**). VS Code prompts for the key
+once and keeps it out of the file:
+
+```json
+{
+  "inputs": [
+    { "type": "promptString", "id": "intervals-key", "description": "Intervals.icu API key", "password": true }
+  ],
+  "servers": {
+    "intervals-icu": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@jakub-m-arch/intervals-icu-mcp"],
+      "env": { "INTERVALS_ICU_API_KEY": "${input:intervals-key}" }
+    }
+  }
+}
+```
+
+### Docker
+
+```bash
+docker run -i --rm -e INTERVALS_ICU_API_KEY=your-key ghcr.io/jakub-m-arch/intervals-icu-mcp
+```
+
+Use it as the `command` (`docker`) with `run -i --rm -e INTERVALS_ICU_API_KEY …` as `args` in any
+of the configs above. The image is multi-arch (amd64 and arm64).
+
+> [!TIP]
+> Want to look around first without any risk of changes? Set
+> `INTERVALS_ICU_WRITE_MODE=read-only` in `env`.
 
 > [!NOTE]
 > This is an independent open-source project. It is **not affiliated with,
@@ -79,45 +173,19 @@ reference in [docs/tools.md](docs/tools.md).
 
 `--athlete-id`, `--toolsets` and `--write-mode` CLI flags override the environment
 variables. The API key can only be set through the environment, because command-line
-arguments are visible to other processes.
+arguments are visible to other processes. Details: [docs/configuration.md](docs/configuration.md).
 
 ## Running from source
 
-Until the npm package is published, build the server locally:
+To run an unreleased version, build the server locally and point your client at `dist/index.mjs`
+instead of `npx`:
 
 ```bash
 git clone https://github.com/jakub-m-arch/intervals-icu-mcp.git
 cd intervals-icu-mcp
 npm install && npm run build
+claude mcp add intervals-icu -e INTERVALS_ICU_API_KEY=your-key -- node "$PWD/dist/index.mjs"
 ```
-
-**Claude Code**
-
-```bash
-claude mcp add intervals-icu -e INTERVALS_ICU_API_KEY=your-key -- node /absolute/path/to/intervals-icu-mcp/dist/index.mjs
-```
-
-**Claude Desktop**: open Settings → Developer → Edit Config and add the following to
-`claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "intervals-icu": {
-      "command": "/absolute/path/to/node",
-      "args": ["/absolute/path/to/intervals-icu-mcp/dist/index.mjs"],
-      "env": { "INTERVALS_ICU_API_KEY": "your-key" }
-    }
-  }
-}
-```
-
-Use the absolute path to `node` (see `which node`). Claude Desktop does not inherit your shell's
-`PATH`, so a plain `"node"` often fails, especially with nvm. Quit the app (Cmd+Q) and start it
-again to load the server.
-
-Want to look around first without any risk of changes? Add
-`"INTERVALS_ICU_WRITE_MODE": "read-only"` to `env`.
 
 **Try it without an AI client:** `npm run inspect` opens the
 [MCP Inspector](https://github.com/modelcontextprotocol/inspector), where you can call each tool
@@ -151,7 +219,8 @@ npm run inspect    # open the server in the MCP Inspector (reads .env)
 npm run test:live  # read-only smoke tests against the real API (needs .env)
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [docs/development.md](docs/development.md) (tests,
+releases) and [docs/architecture.md](docs/architecture.md) for details.
 
 ## License
 

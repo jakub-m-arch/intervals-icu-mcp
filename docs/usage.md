@@ -2,7 +2,7 @@
 
 This guide shows how to use the server as a training companion: checking recovery, reviewing
 sessions and planning your week, with workouts synced to your watch. Setup is described in the
-[README](../README.md#running-from-source).
+[README](../README.md#quick-start).
 
 ## Where to use it
 

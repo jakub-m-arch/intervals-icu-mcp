@@ -1,0 +1,42 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.jakub-m-arch/intervals-icu-mcp",
+  "title": "Intervals.icu",
+  "description": "Read and plan your training in Intervals.icu: activities, fitness, wellness, calendar and workouts.",
+  "repository": {
+    "url": "https://github.com/jakub-m-arch/intervals-icu-mcp",
+    "source": "github"
+  },
+  "version": "0.0.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@jakub-m-arch/intervals-icu-mcp",
+      "version": "0.0.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "INTERVALS_ICU_API_KEY",
+          "description": "API key from Intervals.icu → Settings → Developer Settings",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "INTERVALS_ICU_ATHLETE_ID",
+          "description": "Athlete id. Defaults to 0 (the athlete that owns the API key).",
+          "isRequired": false
+        },
+        {
+          "name": "INTERVALS_ICU_WRITE_MODE",
+          "description": "read-only, safe (default) or full. Deletes need full.",
+          "isRequired": false
+        },
+        {
+          "name": "INTERVALS_ICU_TOOLSETS",
+          "description": "Comma-separated toolsets to enable on top of the defaults.",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
