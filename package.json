@@ -54,7 +54,8 @@
     "openapi:generate": "node scripts/update-openapi.ts --offline",
     "test:live": "node --env-file-if-exists=.env ./node_modules/vitest/vitest.mjs run --config vitest.live.config.ts",
     "docs:generate": "tsx scripts/gen-docs.ts",
-    "docs:check": "npm run docs:generate && git diff --exit-code docs/"
+    "docs:check": "npm run docs:generate && git diff --exit-code docs/",
+    "mcpb:pack": "npm run build && bash scripts/build-mcpb.sh"
   },
   "publishConfig": {
     "access": "public",
