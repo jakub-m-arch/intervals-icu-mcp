@@ -45,3 +45,20 @@ jobs:
       - run: npm install --global npm@latest
       - run: npm ci
       - run: npm publish --provenance --access public
+
+  publish-registry:
+    name: Publish to the MCP Registry
+    needs: [release-please, publish-npm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # GitHub OIDC login for the io.github.jakub-m-arch namespace
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
