@@ -1,7 +1,7 @@
 {
   "name": "@jakub-m-arch/intervals-icu-mcp",
-  "version": "0.1.0",
-  "description": "Model Context Protocol (MCP) server for Intervals.icu \u2014 let Claude and other AI assistants read and plan your training.",
+  "version": "0.1.1",
+  "description": "Model Context Protocol (MCP) server for Intervals.icu — let Claude and other AI assistants read and plan your training.",
   "keywords": [
     "mcp",
     "model-context-protocol",
