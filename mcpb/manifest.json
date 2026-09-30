@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "intervals-icu-mcp",
   "display_name": "Intervals.icu",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Read and plan your training in Intervals.icu.",
   "long_description": "Lets Claude read your Intervals.icu activities, fitness, wellness and calendar, and plan workouts. Writes to planned workouts are limited to a safe mode by default; deletes are disabled unless you opt in.",
   "author": {
@@ -17,13 +17,20 @@
   "documentation": "https://github.com/jakub-m-arch/intervals-icu-mcp/blob/main/docs/usage.md",
   "support": "https://github.com/jakub-m-arch/intervals-icu-mcp/issues",
   "license": "MIT",
-  "keywords": ["intervals.icu", "running", "cycling", "training"],
+  "keywords": [
+    "intervals.icu",
+    "running",
+    "cycling",
+    "training"
+  ],
   "server": {
     "type": "node",
     "entry_point": "dist/index.mjs",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/dist/index.mjs"],
+      "args": [
+        "${__dirname}/dist/index.mjs"
+      ],
       "env": {
         "INTERVALS_ICU_API_KEY": "${user_config.api_key}",
         "INTERVALS_ICU_ATHLETE_ID": "${user_config.athlete_id}",
@@ -64,7 +71,13 @@
     }
   },
   "compatibility": {
-    "platforms": ["darwin", "win32", "linux"],
-    "runtimes": { "node": ">=22.12" }
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=22.12"
+    }
   }
 }

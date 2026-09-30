@@ -7,13 +7,15 @@
     "url": "https://github.com/jakub-m-arch/intervals-icu-mcp",
     "source": "github"
   },
-  "version": "0.0.0",
+  "version": "0.1.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@jakub-m-arch/intervals-icu-mcp",
-      "version": "0.0.0",
-      "transport": { "type": "stdio" },
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": [
         {
           "name": "INTERVALS_ICU_API_KEY",
