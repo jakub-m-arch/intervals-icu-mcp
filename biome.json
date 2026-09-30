@@ -12,7 +12,9 @@
       "!src/api/schema.d.ts",
       "!src/api/endpoints.generated.ts",
       "!openapi",
-      "!CHANGELOG.md"
+      "!CHANGELOG.md",
+      "!server.json",
+      "!mcpb/manifest.json"
     ]
   },
   "formatter": {
