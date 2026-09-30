@@ -51,7 +51,7 @@ reference in [docs/tools.md](docs/tools.md).
 | `chats` (opt-in) | | `add_activity_comment` | |
 | `raw` (opt-in) | `list_api_endpoints`, `api_get` (any read endpoint) | | |
 
-**Prompts** (slash commands in most clients): `weekly-review`, `analyze-activity`,
+**Prompts** (ready-made analysis templates; see [how to use them](docs/usage.md#prompts)): `weekly-review`, `analyze-activity`,
 `recovery-check`, `plan-next-week`, `race-prep`.
 
 **Resources:** `intervals://athlete/profile`, `intervals://guides/workout-syntax`.

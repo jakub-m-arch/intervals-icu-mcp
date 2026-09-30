@@ -20,17 +20,28 @@ and put your background in the project instructions, so you don't have to repeat
 
 | When | What to ask |
 |---|---|
-| **Morning** | `/recovery-check`, or "Should I run today or rest?" |
-| **After a session** (once your watch has synced to Intervals.icu) | `/analyze-activity`, or "How did today's run go?" |
+| **Morning** | "Should I run today or rest?" (prompt: `recovery-check`) |
+| **After a session** (once your watch has synced to Intervals.icu) | "How did today's run go?" (prompt: `analyze-activity`) |
 | **After a session** (write mode) | "Log RPE 4 and feel good for today's run". This is saved on the activity and improves load tracking |
 | **When something hurts or you slept badly** (write mode) | "Log in wellness: sore calves 3/4" |
-| **Sunday** | `/weekly-review`, then `/plan-next-week` |
+| **Sunday** | "Review my week", then "Plan next week" (prompts: `weekly-review`, `plan-next-week`) |
 | **Every few weeks** | "How have my personal bests changed? Compare 42 days with the last year" |
-| **Before a race** | `/race-prep` with the race date and distance |
+| **Before a race** | "Help me prepare for a 5k on 2026-11-15" (prompt: `race-prep`) |
 
-Prompts such as `/recovery-check` are templates that guide the assistant through a multi-step
-analysis. In Claude Desktop they are under the "+" button, and in Claude Code you type them as
-slash commands. Plain questions work just as well.
+Plain questions are all you need: the assistant picks the right tools itself.
+
+### Prompts
+
+The server also provides **prompts**: ready-made, multi-step analysis templates
+(`recovery-check`, `analyze-activity`, `weekly-review`, `plan-next-week`, `race-prep`). They ask
+the assistant to use several tools in a well-tested order. How you open them depends on the
+client:
+
+| Client | How to use a prompt |
+|---|---|
+| Claude Desktop | Click **+** in the message box, choose **intervals-icu**, and pick the prompt. Typing `/recovery-check` does not work there, because `/` is for skills, not MCP prompts. |
+| Claude Code | Type `/mcp__intervals-icu__recovery-check` (every prompt is available as `/mcp__intervals-icu__<name>`). |
+| Other clients | Look for "prompts" or "templates" in the client's MCP menu. |
 
 ## Planning workouts that sync to your watch
 
@@ -39,12 +50,13 @@ slash commands. Plain questions work just as well.
 2. In Intervals.icu, enable uploading planned workouts to your device. Go to Settings → your
    device integration (Garmin, Zepp, Coros, Wahoo, …) and turn on "upload planned workouts" or
    similar.
-3. Ask for a plan, e.g. `/plan-next-week` or "Plan 3 run/walk sessions for next week". The
+3. Ask for a plan, e.g. "Plan 3 run/walk sessions for next week" or the `plan-next-week` prompt. The
    assistant shows the plan and only adds it to your calendar after you agree.
 4. Workouts are saved in Intervals.icu's workout text format. The assistant gets back how each
    one was parsed (`workout_check`) and fixes mistakes such as missing targets.
 5. Your watch receives the structured workouts and guides you through the intervals.
-6. After the week, `/weekly-review` compares what was planned with what you actually did.
+6. After the week, "Review my week" (or the `weekly-review` prompt) compares what was planned
+   with what you actually did.
 
 ## Things to know
 
