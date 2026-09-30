@@ -173,7 +173,7 @@ reference in [docs/tools.md](docs/tools.md).
 
 `--athlete-id`, `--toolsets` and `--write-mode` CLI flags override the environment
 variables. The API key can only be set through the environment, because command-line
-arguments are visible to other processes.
+arguments are visible to other processes. Details: [docs/configuration.md](docs/configuration.md).
 
 ## Running from source
 
@@ -219,7 +219,8 @@ npm run inspect    # open the server in the MCP Inspector (reads .env)
 npm run test:live  # read-only smoke tests against the real API (needs .env)
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [docs/development.md](docs/development.md) (tests,
+releases) and [docs/architecture.md](docs/architecture.md) for details.
 
 ## License
 
