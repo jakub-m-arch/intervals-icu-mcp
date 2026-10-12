@@ -6,11 +6,11 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 
 | Status | Operations |
 |---|---|
-| ✅ Dedicated tool | 48 |
+| ✅ Dedicated tool | 47 |
 | 🔧 Raw read via `api_get` (opt-in `raw` toolset) | 49 |
 | ⛔ Excluded on purpose | 52 |
 | ⏳ Planned | 0 |
-| **Total** | **149** |
+| **Total** | **148** |
 
 ## Activities
 
@@ -196,7 +196,6 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 
 | Operation | Endpoint | Status |
 |---|---|---|
-| `applyToActivities` | `PUT /api/v1/athlete/{athleteId}/sport-settings/{id}/apply` | ✅ `apply_sport_settings` |
 | `createSettings` | `POST /api/v1/athlete/{athleteId}/sport-settings` | ⛔ Adding or removing sport groups changes the account structure; use the UI. |
 | `deleteSettings` | `DELETE /api/v1/athlete/{athleteId}/sport-settings/{id}` | ⛔ Adding or removing sport groups changes the account structure; use the UI. |
 | `getSettings_1` | `GET /api/v1/athlete/{athleteId}/sport-settings/{id}` | 🔧 `api_get` |
