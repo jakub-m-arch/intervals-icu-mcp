@@ -615,23 +615,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/athlete/{athleteId}/sport-settings/{id}/apply": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Apply sport settings to matching activities (updates zones), done asynchronously */
-        put: operations["applyToActivities"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/athlete/{athleteId}/sport-settings/{id}/matching-activities": {
         parameters: {
             query?: never;
@@ -5232,6 +5215,8 @@ export interface components {
             cv?: number;
             /** Format: int32 */
             duration?: number;
+            /** Format: float */
+            efficiency_factor?: number;
             /** Format: int32 */
             end_index?: number;
             /** Format: int32 */
@@ -5242,9 +5227,15 @@ export interface components {
             hrrc?: number;
             ignore?: boolean;
             /** Format: int32 */
+            max_cv_percent?: number;
+            /** Format: int32 */
             rpe?: number;
             /** Format: int32 */
             start_index?: number;
+            /** Format: float */
+            target?: number;
+            /** Format: int32 */
+            tolerance_percent?: number;
             /** Format: int32 */
             tte_mins?: number;
             /** @enum {string} */
@@ -5376,6 +5367,8 @@ export interface components {
             fatigue?: number;
             /** Format: float */
             fatTotal?: number;
+            /** Format: int32 */
+            floorsClimbed?: number;
             /** Format: float */
             hrv?: number;
             /** Format: float */
@@ -6888,32 +6881,14 @@ export interface operations {
             };
         };
     };
-    applyToActivities: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                athleteId: string;
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": Record<string, never>;
-                };
-            };
-        };
-    };
     listMatchingActivities: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Local ISO-8601 date or date and time, defaults to all */
+                newest?: string;
+                /** @description Local ISO-8601 date or date and time e.g. 2019-07-22T16:18:49 or 2019-07-22, defaults to all */
+                oldest?: string;
+            };
             header?: never;
             path: {
                 athleteId: string;
