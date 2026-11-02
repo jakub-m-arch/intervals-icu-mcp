@@ -116,6 +116,11 @@ export const GET_ENDPOINTS: readonly EndpointInfo[] = [
     "summary": "Get activity segments"
   },
   {
+    "operation": "getSFTAnalysis",
+    "path": "/api/v1/activity/{id}/sft-analysis",
+    "summary": "Analyze the activity's sub-maximal fatigue test"
+  },
+  {
     "operation": "getActivityStreams",
     "path": "/api/v1/activity/{id}/streams{ext}",
     "summary": "List streams for the activity"
@@ -271,6 +276,11 @@ export const GET_ENDPOINTS: readonly EndpointInfo[] = [
     "summary": "List athletes that the folder or plan has been shared with"
   },
   {
+    "operation": "listFolderWorkouts",
+    "path": "/api/v1/athlete/{id}/folders/{folderId}/workouts",
+    "summary": ""
+  },
+  {
     "operation": "listGear",
     "path": "/api/v1/athlete/{id}/gear{ext}",
     "summary": "List athlete gear (use .csv for CSV format)"
@@ -394,6 +404,11 @@ export const GET_ENDPOINTS: readonly EndpointInfo[] = [
     "operation": "listMessages",
     "path": "/api/v1/chats/{id}/messages",
     "summary": "List messages for the chat, most recent first"
+  },
+  {
+    "operation": "searchForFolders",
+    "path": "/api/v1/folder-search",
+    "summary": ""
   },
   {
     "operation": "listPaceDistances",
