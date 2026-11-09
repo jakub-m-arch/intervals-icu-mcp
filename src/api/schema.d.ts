@@ -77,7 +77,11 @@ export interface paths {
         /** Download original activity file, Strava activities not supported */
         get: operations["downloadActivityFile"];
         put?: never;
-        post?: never;
+        /**
+         * Replace the original activity file and reprocess the activity
+         * @description Name, description, type, gear, tags, zones, RPE etc. are kept. If the file has not changed nothing is done and the response is still 200 but with activity null, so check for that. Supports .fit, .tcx and .gpx files, optionally gzipped (.gz), or a .zip containing exactly one of these. Strava activities not supported.
+         */
+        post: operations["replaceActivityFile"];
         delete?: never;
         options?: never;
         head?: never;
@@ -415,6 +419,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/activity/{id}/sft-analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Analyze the activity's sub-maximal fatigue test
+         * @description Compares the test with the athlete's previous comparable tests and their wellness data and classifies it as GREEN, WITHIN_NOISE, AMBER, RED or INSUFFICIENT_DATA with the reasoning. Needs read access to the athlete's activities and wellness. The text is in the caller's language (the locale cookie), English if not set.
+         */
+        get: operations["getSFTAnalysis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/activity/{id}/split-interval": {
         parameters: {
             query?: never;
@@ -610,23 +634,6 @@ export interface paths {
         post?: never;
         /** Delete sport settings */
         delete: operations["deleteSettings"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/athlete/{athleteId}/sport-settings/{id}/apply": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Apply sport settings to matching activities (updates zones), done asynchronously */
-        put: operations["applyToActivities"];
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1373,6 +1380,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/athlete/{id}/folders/{folderId}/share-with-me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["shareFolderWithMe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/athlete/{id}/folders/{folderId}/shared-with": {
         parameters: {
             query?: never;
@@ -1398,7 +1421,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["listFolderWorkouts"];
         /** Update a range of workouts on a plan. Currently only hide_from_athlete can be changed */
         put: operations["updatePlanWorkouts"];
         post?: never;
@@ -2121,6 +2144,22 @@ export interface paths {
          * @description The athlete to use is extracted from the bearer token and used to resolve power targets etc.. Note that the create workout endpoint can convert workouts and might be more convenient.
          */
         post: operations["downloadWorkout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/folder-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["searchForFolders"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3691,6 +3730,22 @@ export interface components {
             /** Format: int32 */
             training_load?: number;
         };
+        Change: {
+            clear?: boolean;
+            /** Format: double */
+            mean?: number;
+            name?: string;
+            possible?: boolean;
+            /** Format: double */
+            te?: number;
+            /** Format: int32 */
+            tests?: number;
+            /** Format: double */
+            today?: number;
+            units?: string;
+            /** Format: double */
+            z?: number;
+        };
         Chat: {
             activity_id?: string;
             athlete_id?: string;
@@ -4384,6 +4439,32 @@ export interface components {
             /** Format: int32 */
             start_time?: number;
         };
+        HRV: {
+            baselineEnd?: string;
+            /** Format: double */
+            baselineMean?: number;
+            /** Format: int32 */
+            baselineMornings?: number;
+            /** Format: double */
+            baselineRmssd?: number;
+            /** Format: double */
+            baselineSd?: number;
+            baselineStart?: string;
+            flagged?: boolean;
+            mornings?: components["schemas"]["Morning"][];
+            /** Format: double */
+            recentMean?: number;
+            /** Format: int32 */
+            recentMornings?: number;
+            /** Format: double */
+            recentRmssd?: number;
+            /** Format: double */
+            swc?: number;
+            /** Format: double */
+            threshold?: number;
+            /** Format: double */
+            thresholdRmssd?: number;
+        };
         IcuAchievement: {
             /** Format: float */
             distance?: number;
@@ -4797,6 +4878,14 @@ export interface components {
             /** @enum {string} */
             type?: "TEXT" | "FOLLOW_REQ" | "COACH_REQ" | "COACH_ME_REQ" | "ACTIVITY" | "NOTE" | "JOIN_REQ" | "ACCEPT_COACHING_GROUP";
         };
+        Morning: {
+            date?: string;
+            /** Format: double */
+            ln?: number;
+            recent?: boolean;
+            /** Format: float */
+            rmssd?: number;
+        };
         NewActivityMsg: {
             content?: string;
         };
@@ -4865,6 +4954,12 @@ export interface components {
             /** Format: int64 */
             id?: number;
             new_chat?: components["schemas"]["Chat"];
+        };
+        Night: {
+            date?: string;
+            /** Format: double */
+            hours?: number;
+            recent?: boolean;
         };
         PaceCurve: {
             activity_id?: string[];
@@ -5049,6 +5144,37 @@ export interface components {
                 [key: string]: number;
             };
         };
+        Reason: {
+            /** @enum {string} */
+            flag?: "RPE_UP" | "HR_RESPONSE_SLOW" | "HRR_CHANGED" | "WELLNESS_WORSE" | "RESTING_HR_UP" | "HRV_LOW";
+            flagged?: boolean;
+            /** @enum {string} */
+            indicator?: "GOOD" | "NEUTRAL" | "BAD";
+            text?: string;
+        };
+        ReplaceFileResponse: {
+            activity?: components["schemas"]["Activity"];
+        };
+        RestingHR: {
+            baselineEnd?: string;
+            /** Format: int32 */
+            baselineMax?: number;
+            /** Format: double */
+            baselineMean?: number;
+            /** Format: int32 */
+            baselineMin?: number;
+            /** Format: double */
+            baselineSd?: number;
+            baselineStart?: string;
+            flagged?: boolean;
+            /** Format: int32 */
+            highMornings?: number;
+            mornings?: components["schemas"]["Morning"][];
+            /** Format: int32 */
+            recentMornings?: number;
+            /** Format: double */
+            threshold?: number;
+        };
         RouteSimilarity: {
             bounds?: number[][];
             other?: components["schemas"]["AthleteRoute"];
@@ -5078,6 +5204,26 @@ export interface components {
             /** @enum {string} */
             type?: "Ride" | "Run" | "Swim" | "WeightTraining" | "Hike" | "Walk" | "AlpineSki" | "BackcountrySki" | "Badminton" | "Canoeing" | "Crossfit" | "EBikeRide" | "EMountainBikeRide" | "Elliptical" | "Golf" | "GravelRide" | "TrackRide" | "Handcycle" | "HighIntensityIntervalTraining" | "Hockey" | "IceSkate" | "InlineSkate" | "Kayaking" | "Kitesurf" | "MountainBikeRide" | "Cyclocross" | "NordicSki" | "OpenWaterSwim" | "Padel" | "Pilates" | "Pickleball" | "Racquetball" | "Rugby" | "RockClimbing" | "RollerSki" | "Rowing" | "Sail" | "Skateboard" | "Snowboard" | "Snowshoe" | "Soccer" | "Squash" | "StairStepper" | "StandUpPaddling" | "Surfing" | "TableTennis" | "Tennis" | "TrailRun" | "Transition" | "Velomobile" | "VirtualRide" | "VirtualRow" | "VirtualRun" | "VirtualSki" | "WaterSport" | "Wheelchair" | "Windsurf" | "Workout" | "Yoga" | "Other";
         };
+        SFTAnalysis: {
+            action?: string;
+            /** Format: int32 */
+            baselineTests?: number;
+            efficiency?: components["schemas"]["Change"];
+            flags?: ("RPE_UP" | "HR_RESPONSE_SLOW" | "HRR_CHANGED" | "WELLNESS_WORSE" | "RESTING_HR_UP" | "HRV_LOW")[];
+            hrRecovery?: components["schemas"]["Change"];
+            hrResponse?: components["schemas"]["Change"];
+            hrRise?: components["schemas"]["Change"];
+            hrv?: components["schemas"]["HRV"];
+            meaning?: string;
+            reasons?: components["schemas"]["Reason"][];
+            restingHR?: components["schemas"]["RestingHR"];
+            /** Format: double */
+            rpeChange?: number;
+            sleep?: components["schemas"]["Sleep"];
+            /** @enum {string} */
+            status?: "GREEN" | "WITHIN_NOISE" | "AMBER" | "RED" | "INSUFFICIENT_DATA";
+            tests?: components["schemas"]["Test"][];
+        };
         SharedWith: {
             bio?: string;
             canEdit?: boolean;
@@ -5091,6 +5237,27 @@ export interface components {
             state?: string;
             timezone?: string;
             website?: string;
+        };
+        Sleep: {
+            nights?: components["schemas"]["Night"][];
+            /** Format: double */
+            points?: number;
+            /** Format: double */
+            recentMean?: number;
+            /** Format: int32 */
+            recentNights?: number;
+            usualEnd?: string;
+            /** Format: double */
+            usualMax?: number;
+            /** Format: double */
+            usualMean?: number;
+            /** Format: double */
+            usualMin?: number;
+            /** Format: int32 */
+            usualNights?: number;
+            /** Format: double */
+            usualSd?: number;
+            usualStart?: string;
         };
         SportInfo: {
             /** Format: float */
@@ -5113,6 +5280,8 @@ export interface components {
             best_effort_distances?: number[];
             /** Format: int32 */
             calendar_tile_activity_panel_id?: number;
+            /** @enum {string} */
+            cho_used_calc?: "NONE" | "ROTHSCHILD_2024";
             /** Format: int32 */
             cooldown_time?: number;
             /** Format: date-time */
@@ -5232,6 +5401,8 @@ export interface components {
             cv?: number;
             /** Format: int32 */
             duration?: number;
+            /** Format: float */
+            efficiency_factor?: number;
             /** Format: int32 */
             end_index?: number;
             /** Format: int32 */
@@ -5239,12 +5410,24 @@ export interface components {
             /** Format: int32 */
             final_bpm?: number;
             /** Format: int32 */
+            hr_response_secs?: number;
+            /** Format: int32 */
+            hr_rise?: number;
+            /** Format: int32 */
             hrrc?: number;
             ignore?: boolean;
+            /** Format: int32 */
+            max_cv_percent?: number;
             /** Format: int32 */
             rpe?: number;
             /** Format: int32 */
             start_index?: number;
+            /** @enum {string} */
+            status?: "GREEN" | "WITHIN_NOISE" | "AMBER" | "RED" | "INSUFFICIENT_DATA";
+            /** Format: float */
+            target?: number;
+            /** Format: int32 */
+            tolerance_percent?: number;
             /** Format: int32 */
             tte_mins?: number;
             /** @enum {string} */
@@ -5293,6 +5476,12 @@ export interface components {
             training_load?: number;
             /** Format: float */
             weight?: number;
+        };
+        Test: {
+            activity_id?: string;
+            current?: boolean;
+            start_date_local?: string;
+            test?: components["schemas"]["SubmaxFatigueTest"];
         };
         Time: {
             /** Format: int32 */
@@ -5376,6 +5565,8 @@ export interface components {
             fatigue?: number;
             /** Format: float */
             fatTotal?: number;
+            /** Format: int32 */
+            floorsClimbed?: number;
             /** Format: float */
             hrv?: number;
             /** Format: float */
@@ -5986,6 +6177,44 @@ export interface operations {
             };
         };
     };
+    replaceActivityFile: {
+        parameters: {
+            query?: {
+                /** @description Keep current custom activity field values */
+                keep_custom_fields?: boolean;
+                /** @description Keep the current intervals */
+                keep_intervals?: boolean;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /**
+                     * Format: binary
+                     * @description Activity file
+                     */
+                    file: string;
+                };
+                "multipart/form-data": unknown;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReplaceFileResponse"];
+                };
+            };
+        };
+    };
     downloadActivityFitFile: {
         parameters: {
             query?: {
@@ -6060,7 +6289,10 @@ export interface operations {
     };
     getActivityHRCurve: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Comma separated list of field names to include in the returned object (default is all), also excludes null values e.g. secs,values. Ignored for CSV output */
+                fields?: string[];
+            };
             header?: never;
             path: {
                 ext: string;
@@ -6155,7 +6387,10 @@ export interface operations {
     };
     getIntervals: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Comma separated list of field names to include in the returned object (default is all), also excludes null values. Use dot separated names to select fields from the objects in the arrays e.g. icu_intervals.average_watts */
+                fields?: string[];
+            };
             header?: never;
             path: {
                 id: string;
@@ -6314,6 +6549,8 @@ export interface operations {
     getActivityPaceCurve: {
         parameters: {
             query?: {
+                /** @description Comma separated list of field names to include in the returned object (default is all), also excludes null values e.g. distance,values. Ignored for CSV output */
+                fields?: string[];
                 gap?: boolean;
             };
             header?: never;
@@ -6363,6 +6600,8 @@ export interface operations {
             query?: {
                 /** @description Use kj0 or kj1 to get one of the athlete's predefined fatigued power curves */
                 fatigue?: string;
+                /** @description Comma separated list of field names to include in the returned object (default is all), also excludes null values e.g. secs,watts. Ignored for CSV output */
+                fields?: string[];
             };
             header?: never;
             path: {
@@ -6500,6 +6739,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["IcuSegment"][];
+                };
+            };
+        };
+    };
+    getSFTAnalysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SFTAnalysis"];
                 };
             };
         };
@@ -6888,32 +7149,14 @@ export interface operations {
             };
         };
     };
-    applyToActivities: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                athleteId: string;
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": Record<string, never>;
-                };
-            };
-        };
-    };
     listMatchingActivities: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Local ISO-8601 date or date and time, defaults to all */
+                newest?: string;
+                /** @description Local ISO-8601 date or date and time e.g. 2019-07-22T16:18:49 or 2019-07-22, defaults to all */
+                oldest?: string;
+            };
             header?: never;
             path: {
                 athleteId: string;
@@ -7008,7 +7251,7 @@ export interface operations {
     listActivities: {
         parameters: {
             query: {
-                /** @description Comma separated list of field names to include in the returned objects (default is all), also excludes null values */
+                /** @description Comma separated list of field names to include in the returned objects (default is all), also excludes null values. Use dot separated names to select fields from nested objects and the objects in arrays */
                 fields?: string[];
                 /** @description Return at most this many activities */
                 limit?: number;
@@ -7113,7 +7356,12 @@ export interface operations {
     };
     downloadActivitiesAsCSV: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Local ISO-8601 date or date and time, defaults to now */
+                newest?: string;
+                /** @description Local ISO-8601 date or date and time e.g. 2019-07-22T16:18:49 or 2019-07-22, defaults to 3 months before newest */
+                oldest?: string;
+            };
             header?: never;
             path: {
                 id: string;
@@ -7894,6 +8142,8 @@ export interface operations {
                 category?: string[];
                 /** @description Convert workouts to this format (zwo, mrc, erg or fit) and add workout_filename and workout_file_base64 to workout object */
                 ext?: string;
+                /** @description Comma separated list of field names to include in the returned objects (default is all), also excludes null values. Use dot separated names to select fields from nested objects and the objects in arrays. Ignored for CSV output */
+                fields?: string[];
                 /** @description Percentage used to convert fixed HR targets into a range (default is 1.5 or whatever is configured in the Garmin box in /settings) */
                 hrRange?: number;
                 /** @description Max number of events to return (default is all events) */
@@ -7933,7 +8183,10 @@ export interface operations {
     };
     showEvent: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Comma separated list of field names to include in the returned object (default is all), also excludes null values. Use dot separated names to select fields from nested objects and the objects in arrays */
+                fields?: string[];
+            };
             header?: never;
             path: {
                 eventId: number;
@@ -8296,6 +8549,29 @@ export interface operations {
             };
         };
     };
+    shareFolderWithMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                folderId: number;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Folder"][];
+                };
+            };
+        };
+    };
     listFolderSharedWith: {
         parameters: {
             query?: never;
@@ -8342,6 +8618,29 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SharedWith"][];
+                };
+            };
+        };
+    };
+    listFolderWorkouts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                folderId: number;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Workout"][];
                 };
             };
         };
@@ -8638,6 +8937,8 @@ export interface operations {
                 f2?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
                 f3?: components["schemas"]["ActivityFilter"][];
+                /** @description Comma separated list of field names to include in the returned object (default is all). Use dot separated names to select fields from nested objects and the objects in arrays e.g. list.secs,list.values. Ignored for CSV output */
+                fields?: string[];
                 /** @description Only consider activities matching all the filters in this list */
                 filters?: components["schemas"]["ActivityFilter"][];
                 newest?: string;
@@ -8702,6 +9003,8 @@ export interface operations {
                 f2?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
                 f3?: components["schemas"]["ActivityFilter"][];
+                /** @description Comma separated list of field names to include in the returned object (default is all). Use dot separated names to select fields from nested objects and the objects in arrays e.g. list.distance,list.values. Ignored for CSV output */
+                fields?: string[];
                 /** @description Only consider activities matching all the filters in this list */
                 filters?: components["schemas"]["ActivityFilter"][];
                 /** @description Return gradient adjusted pace curves */
@@ -8746,6 +9049,8 @@ export interface operations {
                 f2?: components["schemas"]["ActivityFilter"][];
                 /** @description If set each curve is returned with these filters applied to compare curves */
                 f3?: components["schemas"]["ActivityFilter"][];
+                /** @description Comma separated list of field names to include in the returned object (default is all). Use dot separated names to select fields from nested objects and the objects in arrays e.g. list.secs,list.values. Ignored for CSV output */
+                fields?: string[];
                 /** @description Only consider activities matching all the filters in this list */
                 filters?: components["schemas"]["ActivityFilter"][];
                 includeRanks?: boolean;
@@ -9676,6 +9981,36 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    searchForFolders: {
+        parameters: {
+            query: {
+                activity_types?: ("Ride" | "Run" | "Swim" | "WeightTraining" | "Hike" | "Walk" | "AlpineSki" | "BackcountrySki" | "Badminton" | "Canoeing" | "Crossfit" | "EBikeRide" | "EMountainBikeRide" | "Elliptical" | "Golf" | "GravelRide" | "TrackRide" | "Handcycle" | "HighIntensityIntervalTraining" | "Hockey" | "IceSkate" | "InlineSkate" | "Kayaking" | "Kitesurf" | "MountainBikeRide" | "Cyclocross" | "NordicSki" | "OpenWaterSwim" | "Padel" | "Pilates" | "Pickleball" | "Racquetball" | "Rugby" | "RockClimbing" | "RollerSki" | "Rowing" | "Sail" | "Skateboard" | "Snowboard" | "Snowshoe" | "Soccer" | "Squash" | "StairStepper" | "StandUpPaddling" | "Surfing" | "TableTennis" | "Tennis" | "TrailRun" | "Transition" | "Velomobile" | "VirtualRide" | "VirtualRow" | "VirtualRun" | "VirtualSki" | "WaterSport" | "Wheelchair" | "Windsurf" | "Workout" | "Yoga" | "Other")[];
+                hours_per_week_max: number;
+                hours_per_week_min: number;
+                limit?: number;
+                q: string;
+                type?: "FOLDER" | "PLAN";
+                weeks_max: number;
+                weeks_min: number;
+                workout_targets?: ("AUTO" | "POWER" | "HR" | "PACE")[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Folder"][];
+                };
             };
         };
     };

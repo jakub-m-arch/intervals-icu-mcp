@@ -6,11 +6,11 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 
 | Status | Operations |
 |---|---|
-| ✅ Dedicated tool | 48 |
-| 🔧 Raw read via `api_get` (opt-in `raw` toolset) | 49 |
+| ✅ Dedicated tool | 47 |
+| 🔧 Raw read via `api_get` (opt-in `raw` toolset) | 52 |
 | ⛔ Excluded on purpose | 52 |
-| ⏳ Planned | 0 |
-| **Total** | **149** |
+| ⏳ Planned | 2 |
+| **Total** | **153** |
 
 ## Activities
 
@@ -47,6 +47,7 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 | `getPowerHistogram` | `GET /api/v1/activity/{id}/power-histogram` | ✅ `get_activity_histogram` |
 | `getPowerHRCurve` | `GET /api/v1/athlete/{id}/power-hr-curve` | 🔧 `api_get` |
 | `getPowerVsHR` | `GET /api/v1/activity/{id}/power-vs-hr{ext}` | 🔧 `api_get` |
+| `getSFTAnalysis` | `GET /api/v1/activity/{id}/sft-analysis` | 🔧 `api_get` |
 | `getTimeAtHR` | `GET /api/v1/activity/{id}/time-at-hr` | 🔧 `api_get` |
 | `listActivities` | `GET /api/v1/athlete/{id}/activities` | ✅ `list_activities` |
 | `listActivitiesAround` | `GET /api/v1/athlete/{id}/activities-around` | 🔧 `api_get` |
@@ -58,6 +59,7 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 | `listAthletePaceCurves` | `GET /api/v1/athlete/{id}/pace-curves{ext}` | ✅ `get_athlete_curves` |
 | `listAthletePowerCurves` | `GET /api/v1/athlete/{id}/power-curves{ext}` | ✅ `get_athlete_curves` |
 | `listTags_2` | `GET /api/v1/athlete/{id}/activity-tags` | 🔧 `api_get` |
+| `replaceActivityFile` | `POST /api/v1/activity/{id}/file` | ⏳ planned |
 | `searchForActivities` | `GET /api/v1/athlete/{id}/activities/search` | ✅ `search_activities` |
 | `searchForActivitiesFull` | `GET /api/v1/athlete/{id}/activities/search-full` | 🔧 `api_get` |
 | `searchForIntervals` | `GET /api/v1/athlete/{id}/activities/interval-search` | ✅ `search_intervals` |
@@ -163,8 +165,11 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 | `importWorkoutFile` | `POST /api/v1/athlete/{id}/folders/{folderId}/import-workout` | ⛔ Binary workout file import. |
 | `listFolders` | `GET /api/v1/athlete/{id}/folders` | ✅ `apply_plan`, `list_workout_library`, `delete_folder` |
 | `listFolderSharedWith` | `GET /api/v1/athlete/{id}/folders/{folderId}/shared-with` | 🔧 `api_get` |
+| `listFolderWorkouts` | `GET /api/v1/athlete/{id}/folders/{folderId}/workouts` | 🔧 `api_get` |
 | `listTags` | `GET /api/v1/athlete/{id}/workout-tags` | 🔧 `api_get` |
 | `listWorkouts` | `GET /api/v1/athlete/{id}/workouts` | 🔧 `api_get` |
+| `searchForFolders` | `GET /api/v1/folder-search` | 🔧 `api_get` |
+| `shareFolderWithMe` | `POST /api/v1/athlete/{id}/folders/{folderId}/share-with-me` | ⏳ planned |
 | `showWorkout` | `GET /api/v1/athlete/{id}/workouts/{workoutId}` | ✅ `get_workout`, `delete_workout` |
 | `updateFolder` | `PUT /api/v1/athlete/{id}/folders/{folderId}` | ✅ `update_folder` |
 | `updateFolderSharedWith` | `PUT /api/v1/athlete/{id}/folders/{folderId}/shared-with` | ⛔ Sharing folders with other athletes is out of scope. |
@@ -196,7 +201,6 @@ Intervals.icu API operations (from the OpenAPI snapshot) and the tools that cove
 
 | Operation | Endpoint | Status |
 |---|---|---|
-| `applyToActivities` | `PUT /api/v1/athlete/{athleteId}/sport-settings/{id}/apply` | ✅ `apply_sport_settings` |
 | `createSettings` | `POST /api/v1/athlete/{athleteId}/sport-settings` | ⛔ Adding or removing sport groups changes the account structure; use the UI. |
 | `deleteSettings` | `DELETE /api/v1/athlete/{athleteId}/sport-settings/{id}` | ⛔ Adding or removing sport groups changes the account structure; use the UI. |
 | `getSettings_1` | `GET /api/v1/athlete/{athleteId}/sport-settings/{id}` | 🔧 `api_get` |
